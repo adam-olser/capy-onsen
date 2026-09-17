@@ -28,6 +28,12 @@ export const ICON_DRAW = {
     blob(17, 4, 10, 6, C.leaf, 2);
     px(19, 6, 5, 1, '#7fc274');
   },
+  stack(){                                   // two planks with a capybara riding the top
+    blob(2, 26, 28, 5, C.out, 2); blob(3, 27, 26, 3, '#8a6242', 2);
+    blob(6, 21, 20, 5, C.out, 2); blob(7, 22, 18, 3, '#6b4a33', 2);
+    if (CAPY_RUN.complete && CAPY_RUN.naturalWidth)
+      TARGET.drawImage(CAPY_RUN, 0, 0, RUN_FRAME_W, RUN_FRAME_H, 3, 0, RUN_FRAME_W, RUN_FRAME_H);
+  },
   run(){                                     // Rainloaf's sprite, centred, unscaled
     if (!CAPY_RUN.complete || !CAPY_RUN.naturalWidth) return;
     TARGET.drawImage(CAPY_RUN, 2 * RUN_FRAME_W, 0, RUN_FRAME_W, RUN_FRAME_H,

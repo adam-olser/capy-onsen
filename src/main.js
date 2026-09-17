@@ -8,9 +8,10 @@ import { match } from './games/match.js';
 import { bubble } from './games/bubble.js';
 import { orange } from './games/orange.js';
 import { run } from './games/run.js';
+import { stack } from './games/stack.js';
 
 /* ================= routing ================= */
-const GAMES = { match, bubble, orange, run };
+const GAMES = { match, bubble, orange, run, stack };
 let dom = null;                       // the non-canvas game currently open
 
 function openGame(key){
