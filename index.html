@@ -39,6 +39,9 @@
     <button class="card-btn" data-game="stack">
       <canvas class="ico" width="32" height="32" aria-hidden="true"></canvas><span>CAPY STACK</span><span class="best" id="best-stack"></span>
     </button>
+    <button class="card-btn" data-game="wordle">
+      <canvas class="ico" width="32" height="32" aria-hidden="true"></canvas><span>WORDLEBARA</span><span class="best" id="best-wordle"></span>
+    </button>
   </div>
   <p class="credit">run sprite by <a href="https://rainloaf.itch.io/capybara-sprite-sheet" target="_blank" rel="noopener">Rainloaf</a></p>
 </div>
@@ -52,6 +55,11 @@
   <div class="stage">
     <div id="board"></div>
     <canvas id="play"></canvas>
+    <div id="word">
+      <canvas id="capyface" width="44" height="34" aria-hidden="true"></canvas>
+      <div id="wgrid"></div>
+      <div id="wkeys"></div>
+    </div>
     <div id="win"><div class="box">
     <p id="wintext"></p>
     <p class="sub" id="winsub"></p>

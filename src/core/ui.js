@@ -18,13 +18,14 @@ export function paintBest(){
     if (el) el.textContent = b ? 'BEST ' + b : '';
   }
 }
-export function finish(line, value, key, lowerBetter){
+export function finish(line, value, key, lowerBetter, record = true){
   const prev = BEST.get(key);
-  const isBest = !prev || (lowerBetter ? value < prev : value > prev);
+  const isBest = record && (!prev || (lowerBetter ? value < prev : value > prev));
   if (isBest) BEST.set(key, value);
   paintBest();
   document.getElementById('wintext').textContent = line;
-  document.getElementById('winsub').textContent = isBest ? '★ NEW BEST ★' : 'BEST ' + prev;
+  document.getElementById('winsub').textContent =
+    isBest ? '★ NEW BEST ★' : (prev ? 'BEST ' + prev : '');
   winEl.classList.add('on');
   sfx.win();
 }

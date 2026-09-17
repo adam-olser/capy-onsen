@@ -28,6 +28,11 @@ export const ICON_DRAW = {
     blob(17, 4, 10, 6, C.leaf, 2);
     px(19, 6, 5, 1, '#7fc274');
   },
+  wordle(){                                  // a guess grid resolving to green
+    const tile = (x, y, c) => { blob(x, y, 9, 11, C.out, 2); blob(x + 1, y + 1, 7, 9, c, 2); };
+    tile(1, 4, '#2a3a46'); tile(11, 4, '#2a3a46'); tile(21, 4, '#d9902f');
+    tile(1, 17, '#4f8a49'); tile(11, 17, '#4f8a49'); tile(21, 17, '#4f8a49');
+  },
   stack(){                                   // two planks with a capybara riding the top
     blob(2, 26, 28, 5, C.out, 2); blob(3, 27, 26, 3, '#8a6242', 2);
     blob(6, 21, 20, 5, C.out, 2); blob(7, 22, 18, 3, '#6b4a33', 2);

@@ -3,7 +3,7 @@ import { C } from '../core/palette.js';
 
 /* capybara head + shoulders, front on, sitting in the water */
 export let capyBox = {x:0, y:0, w:0, h:0};
-export function drawCapy(cx, cy, w, blink){
+export function drawCapy(cx, cy, w, blink, mood = 'idle'){
   const u = Math.max(1, Math.round(w / 22));
   const hw = 10 * u, hh = 7 * u;
   capyBox = {x: cx - hw - 3 * u, y: cy - hh - 5 * u, w: (hw + 3 * u) * 2, h: (hh + 8 * u) * 2};
@@ -25,10 +25,24 @@ export function drawCapy(cx, cy, w, blink){
   blob(cx - hw, cy - hh, hw * 2, hh * 2, C.fur, 3 * u);
   px(cx - hw + 3 * u, cy - hh + u, 4 * u, u, C.furHi);
 
-  // eyes
+  // eyes — mood only changes the eyes and cheeks, never the silhouette
   const eh = blink ? u : 2 * u;
-  px(cx - 6 * u, cy - u, 2 * u, eh, C.eye);
-  px(cx + 4 * u, cy - u, 2 * u, eh, C.eye);
+  if (mood === 'happy' || mood === 'win'){
+    for (const sgn of [-1, 1]){                       // ^ ^
+      const ex = cx + (sgn < 0 ? -6 * u : 4 * u);
+      px(ex, cy, u, u, C.eye); px(ex + u, cy - u, u, u, C.eye); px(ex + 2 * u, cy, u, u, C.eye);
+    }
+    px(cx - 9 * u, cy + u, 2 * u, u, '#e08a63');
+    px(cx + 7 * u, cy + u, 2 * u, u, '#e08a63');
+  } else if (mood === 'sad' || mood === 'lose'){
+    px(cx - 6 * u, cy, 2 * u, u, C.eye);              // droopy slits
+    px(cx + 4 * u, cy, 2 * u, u, C.eye);
+    px(cx - 6 * u, cy - u, u, u, C.eye);
+    px(cx + 5 * u, cy - u, u, u, C.eye);
+  } else {
+    px(cx - 6 * u, cy - u, 2 * u, eh, C.eye);
+    px(cx + 4 * u, cy - u, 2 * u, eh, C.eye);
+  }
 
   // muzzle + nostrils
   blob(cx - 5 * u, cy + 2 * u, 10 * u, 5 * u, C.muzzle, 2 * u);

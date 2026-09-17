@@ -9,9 +9,12 @@ import { bubble } from './games/bubble.js';
 import { orange } from './games/orange.js';
 import { run } from './games/run.js';
 import { stack } from './games/stack.js';
+import { wordle } from './games/wordle.js';
 
 /* ================= routing ================= */
-const GAMES = { match, bubble, orange, run, stack };
+const GAMES = { match, bubble, orange, run, stack, wordle };
+const wordEl = document.getElementById('word');
+const paneOf = g => g.pane || (g.canvas ? 'play' : 'board');
 let dom = null;                       // the non-canvas game currently open
 
 function openGame(key){
@@ -20,20 +23,25 @@ function openGame(key){
   gameEl.classList.add('on');
   document.getElementById('gtitle').textContent = g.title;
   winEl.classList.remove('on');
-  boardEl.style.display = g.canvas ? 'none' : 'grid';
-  playEl.style.display  = g.canvas ? 'block' : 'none';
+  if (dom && dom.stop) dom.stop();
+  const p = paneOf(g);
+  boardEl.style.display = p === 'board' ? 'grid'  : 'none';
+  playEl.style.display  = p === 'play'  ? 'block' : 'none';
+  wordEl.style.display  = p === 'word'  ? 'flex'  : 'none';
   sfx.tap();
-  if (g.canvas){ dom = null; startArena(g); }
+  if (p === 'play'){ dom = null; startArena(g); }
   else { dom = g; g.start(); }
 }
 function closeGame(){
-  stopArena(); dom = null;
+  stopArena();
+  if (dom && dom.stop) dom.stop();
+  dom = null;
   gameEl.classList.remove('on'); winEl.classList.remove('on');
   sfx.tap();
 }
 function restart(){
   winEl.classList.remove('on');
-  if (dom) dom.start(); else restartArena();
+  if (dom){ if (dom.stop) dom.stop(); dom.start(); } else restartArena();
   sfx.tap();
 }
 const active = () => dom || current();
