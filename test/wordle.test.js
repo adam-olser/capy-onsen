@@ -64,3 +64,32 @@ test('runner and catcher hitboxes still hold', () => {
   expect(hitsObstacle({x: 9, w: 4, h: 6}, 10, 20, 0)).toBe(true);
   expect(hitsObstacle({x: 9, w: 4, h: 6}, 10, 20, 7)).toBe(false);
 });
+
+/* --- capy run collision geometry --- */
+import { extentAt, hitBox, FRAME_COLS, FRAME_ROWS } from '../src/sprites/run-footprint.js';
+
+test('a short obstacle only meets the legs, not the nose', () => {
+  const scale = 2, cx = 100, cellL = cx - FRAME_COLS / 2 * scale;
+  const low  = hitBox(0, 1 * scale, 0, scale, cx);     // ankle-height bush
+  const tall = hitBox(0, FRAME_ROWS * scale, 0, scale, cx);
+  // frame 0 stands on x 7..14, but its silhouette reaches x 26 (the snout)
+  expect(low).toEqual([cellL + 7 * scale, cellL + 15 * scale]);
+  expect(tall[1]).toBe(cellL + 27 * scale);
+  expect(low[1]).toBeLessThan(tall[1]);                 // short bush cannot reach the snout
+});
+
+test('the box grows as the obstacle gets taller', () => {
+  const widths = [1, 4, 8, 14, 21].map(h => { const b = hitBox(2, h, 0, 1, 0); return b[1] - b[0]; });
+  expect(widths).toEqual([...widths].sort((a, b) => a - b));
+});
+
+test('jumping shrinks what the obstacle can reach, then clears it', () => {
+  const scale = 2;
+  expect(hitBox(0, 6 * scale, 0, scale, 0)).not.toBeNull();       // grounded: hits
+  expect(hitBox(0, 6 * scale, 6 * scale, scale, 0)).toBeNull();   // feet level with its top
+  expect(hitBox(0, 6 * scale, 9 * scale, scale, 0)).toBeNull();   // well above it
+});
+
+test('a frame with both feet off the ground cannot be tripped at ankle height', () => {
+  expect(extentAt(4, 1)).toBeNull();
+});

@@ -5,6 +5,7 @@ import { finish, over } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { hitsObstacle } from '../core/hit.js';
 import { drawCapyRun, RUN_FRAME_W, RUN_FRAME_H, RUN_AIR_FRAME } from '../sprites/capy.js';
+import { hitBox } from '../sprites/run-footprint.js';
 
 /* ================= 4. capy run ================= */
 export const run = {
@@ -60,9 +61,14 @@ export const run = {
     for (const o of this.obs) o.x -= this.v * dt;
     this.obs = this.obs.filter(o => o.x + o.w > -2);
 
-    // hitbox = the sprite's body footprint, inset from its 27px cell
-    const back = this.cx - 9 * this.scale, front = this.cx + 9 * this.scale;
+    /* Collide against the part of the sprite the obstacle can actually reach.
+       The nose overhangs the front paw by 8px, so one fixed box either kills
+       you with the bush under your chin or lets it pass through the chest. */
+    const frame = this.y > 0 ? RUN_AIR_FRAME : Math.floor(this.phase);
     for (const o of this.obs){
+      const box = hitBox(frame, o.h, this.y, this.scale, this.cx);
+      if (!box) continue;                 // jumped clear, or feet off the ground this frame
+      const [back, front] = box;
       if (hitsObstacle(o, back, front, this.y)){
         const m = Math.round(this.d / (this.cw * .15));
         finish('RAN ' + m + ' m', m, 'run', false);
