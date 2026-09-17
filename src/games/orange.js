@@ -3,7 +3,8 @@ import { px, TARGET } from '../core/paint.js';
 import { finish } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { caught } from '../core/hit.js';
-import { drawCapy } from '../sprites/capy.js';
+import { capyHead } from '../sprites/capy.js';
+import { drawCapyFace } from '../sprites/capyFace.js';
 import { drawYuzu } from '../sprites/props.js';
 
 /* ================= 3. orange catch ================= */
@@ -13,10 +14,11 @@ export const orange = {
   key: 'orange', title: 'ORANGE CATCH', canvas: true,
   layout(){
     this.cw = Math.min(40, Math.max(16, Math.round(PH * .17)));
-    this.u  = Math.max(1, Math.round(this.cw / 22));
+    const head = capyHead(this.cw);
+    this.u  = head.u;
     this.cy = PH - this.cw * .72;            // head centre
-    this.top = this.cy - 7 * this.u;         // top of the head: the actual catch line
-    this.halfW = 10 * this.u;                // head half-width
+    this.top = this.cy - head.hh;            // top of the head: the actual catch line
+    this.halfW = head.hw;                    // head half-width
     this.r = Math.max(3, Math.round(this.cw * .13));
     this.x = Math.max(this.halfW, Math.min(PW - this.halfW, this.x == null ? PW / 2 : this.x));
   },
@@ -74,7 +76,7 @@ export const orange = {
       TARGET.globalAlpha = .1; px(PW * .05, ry, PW * .9, 1, '#bfeef0'); TARGET.globalAlpha = 1;
     }
     // capybara sits a layer below every orange
-    drawCapy(this.x, this.cy, this.cw, false);
+    drawCapyFace(this.x, this.cy, this.cw, false);
     for (let i = 0; i < this.stack; i++){
       const [dx, dy] = STACK_POS[i];
       drawYuzu(this.x + dx * this.r * 1.9, this.top - this.r + dy * this.r * 1.8, this.r);

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Capy Onsen — sprite export</title>
+<style>
+  body{background:#16223a;color:#f4e9d8;font:13px ui-monospace,monospace;margin:0;padding:20px}
+  h1{font-size:15px;letter-spacing:.08em;margin:0 0 4px}
+  #status{color:#f2a03d;margin-bottom:16px}
+  #out{display:flex;flex-wrap:wrap;gap:16px}
+  figure{margin:0;text-align:center}
+  canvas{image-rendering:pixelated;background:
+    repeating-conic-gradient(#2a3a46 0% 25%, #22303b 0% 50%) 50%/12px 12px;
+    border:1px solid #3a4a56;border-radius:4px}
+  figcaption{margin-top:5px;font-size:10px;opacity:.7}
+</style>
+</head>
+<body>
+<h1>CAPY ONSEN — SPRITE EXPORT</h1>
+<div id="status">rendering…</div>
+<div id="out"></div>
+<script type="module" src="./tools/export.js"></script>
+</body>
+</html>

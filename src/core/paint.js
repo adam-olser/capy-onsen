@@ -19,6 +19,24 @@ export function blob(x, y, w, h, c, r){
   px(x, y + r, w, h - 2 * r, c);
 }
 
+/* Rounded rect with true circular corners, drawn scanline by scanline.
+   blob() chamfers into an octagon, which reads as a chopped-off chin at
+   larger sizes; this curves properly. */
+export function roundRect(x, y, w, h, r, c){
+  r = Math.max(0, Math.min(Math.round(r), Math.floor(Math.min(w, h) / 2)));
+  for (let i = 0; i < h; i++){
+    let inset = 0;
+    if (i < r){
+      const dy = r - 1 - i;
+      inset = r - Math.round(Math.sqrt(Math.max(0, r * r - dy * dy)));
+    } else if (i >= h - r){
+      const dy = i - (h - r);
+      inset = r - Math.round(Math.sqrt(Math.max(0, r * r - dy * dy)));
+    }
+    px(x + inset, y + i, w - inset * 2, 1, c);
+  }
+}
+
 export function ring(cx, cy, r, c){
   // midpoint circle: the old fixed-corner version was a rounded square past r=6
   let x = Math.round(r), y = 0, err = 1 - x;

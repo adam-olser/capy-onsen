@@ -93,3 +93,43 @@ test('jumping shrinks what the obstacle can reach, then clears it', () => {
 test('a frame with both feet off the ground cannot be tripped at ankle height', () => {
   expect(extentAt(4, 1)).toBeNull();
 });
+
+/* --- capy face frame selection (pure logic, see src/sprites/capyFace.js) --- */
+import '../test/setup.js';
+import { pickFace } from '../src/sprites/capyFace.js';
+
+test('idle and blink are the baseline frames', () => {
+  expect(pickFace(false, {})).toBe('idle');
+  expect(pickFace(true, {})).toBe('blink');
+});
+
+test('happy covers both happy and win, sad covers both sad and lose', () => {
+  expect(pickFace(false, { mood: 'happy' })).toBe('happy');
+  expect(pickFace(false, { mood: 'win' })).toBe('happy');
+  expect(pickFace(false, { mood: 'sad' })).toBe('sad');
+  expect(pickFace(false, { mood: 'lose' })).toBe('sad');
+});
+
+test('look picks the matching side', () => {
+  expect(pickFace(false, { look: -1 })).toBe('look-left');
+  expect(pickFace(false, { look: 1 })).toBe('look-right');
+});
+
+test('the two smaller turn steps share one frame, the full turn is separate', () => {
+  expect(pickFace(false, { turn: 1 / 3 })).toBe('turn-right-1');
+  expect(pickFace(false, { turn: 2 / 3 })).toBe('turn-right-2');
+  expect(pickFace(false, { turn: 1 })).toBe('turn-right-2');
+  expect(pickFace(false, { turn: -1 / 3 })).toBe('turn-left-1');
+  expect(pickFace(false, { turn: -2 / 3 })).toBe('turn-left-2');
+});
+
+test('priority is turn > look > blink > mood, since only one frame can show', () => {
+  expect(pickFace(true, { turn: 1 })).toBe('turn-right-2');
+  expect(pickFace(true, { look: 1 })).toBe('look-right');
+  expect(pickFace(true, { mood: 'happy' })).toBe('blink');
+});
+
+test('states with no dedicated art fall back to idle', () => {
+  expect(pickFace(false, { ear: 1 })).toBe('idle');
+  expect(pickFace(false, { sniff: 1 })).toBe('idle');
+});

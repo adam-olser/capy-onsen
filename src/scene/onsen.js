@@ -1,7 +1,7 @@
 import { px, blob, setTarget } from '../core/paint.js';
 import { C } from '../core/palette.js';
 import { RM, PIXEL, setPixel, T, setT } from '../core/env.js';
-import { drawCapy, capyBox } from '../sprites/capy.js';
+import { drawCapyPortrait, capyPortraitBox } from '../sprites/capy.js';
 import { drawYuzu, pine } from '../sprites/props.js';
 import { sfx } from '../audio/sfx.js';
 
@@ -44,7 +44,7 @@ function resize(){
 }
 addEventListener('resize', resize, {passive: true});
 
-let t0 = performance.now(), blinkUntil = 0, happyUntil = 0;
+let t0 = performance.now(), happyUntil = 0;
 
 function frame(now){
   setTarget(bx);
@@ -113,7 +113,7 @@ function frame(now){
   // capybara (bobbing)
   const bob = RM ? 0 : Math.sin(T * 1.3) * Math.max(1, VH * .006);
   const cw = Math.min(44, Math.max(18, Math.round(VH * .17)));
-  drawCapy(VW / 2, waterY - cw * .28 + bob, cw, now < blinkUntil || (now % 4200 < 130));
+  drawCapyPortrait(VW / 2, waterY - cw * .28 + bob, cw);
   // waterline cuts across the chin
   const cut = waterY + Math.round(cw * .04) + bob;
   px(0, cut, VW, VH - cut, C.water1);
@@ -205,8 +205,8 @@ function frame(now){
 /* poke the capybara */
 cv.addEventListener('pointerdown', e => {
   const vx = e.clientX / PIXEL, vy = e.clientY / PIXEL;
-  if (vx > capyBox.x && vx < capyBox.x + capyBox.w && vy > capyBox.y && vy < capyBox.y + capyBox.h){
-    blinkUntil = performance.now() + 220;
+  const b = capyPortraitBox;
+  if (vx > b.x && vx < b.x + b.w && vy > b.y && vy < b.y + b.h){
     happyUntil = performance.now() + 900;
     sfx.purr();
   }

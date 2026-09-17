@@ -147,7 +147,7 @@ body{
   margin:auto 0;               /* and centres it in the stage */
   gap:5px;min-height:0;width:100%;overflow:hidden;
 }
-#capyface{width:clamp(38px,10vw,64px);height:auto;image-rendering:pixelated;flex:none}
+#capyface{width:clamp(42px,11vw,92px);height:auto;image-rendering:pixelated;flex:none}
 /* rows split the available height, tiles take their size from the row, so the
    grid can never overflow and paint over the title bar or the keyboard */
 #wgrid{

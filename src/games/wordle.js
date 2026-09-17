@@ -3,13 +3,25 @@ import { scoreGuess, mergeKeyState } from '../core/score.js';
 import { finish, statEl, over } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { setTarget, TARGET } from '../core/paint.js';
-import { drawCapy } from '../sprites/capy.js';
+import { drawCapyFace } from '../sprites/capyFace.js';
 import { drawYuzu } from '../sprites/props.js';
 
 /* ================= 6. wordlebara =================
    Wordle rules. The capybara watches: it perks up on a green, slumps on an
    all-grey row, and gets a yuzu on its head if you finish it. */
 const ROWS = 6, COLS = 5;
+
+/* Idle repertoire. One is picked at random between reactions so the capybara
+   is never simply static; each is a small parameter change, not a new sprite. */
+const IDLES = [
+  { name: 'blink', dur: .18 },
+  { name: 'look',  dur: 1.2 },
+  { name: 'ear',   dur: .55 },
+  { name: 'sniff', dur: .8  },
+  { name: 'doze',  dur: 1.6 },
+  { name: 'turn',  dur: 2.2 },
+  { name: 'turn',  dur: 2.2 },      // twice as likely: it is the nicest one
+];
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', '⏎ zxcvbnm ⌫'];
 const DAY0 = Date.UTC(2026, 0, 1);
 
@@ -33,7 +45,10 @@ export const wordle = {
     }
 
     this.row = 0; this.cur = ''; this.done = false;
-    this.keyState = {}; this.mood = 'idle'; this.moodUntil = 0; this.bounce = 0;
+    this.keyState = {}; this.mood = 'idle'; this.moodUntil = 0;
+    this.idle = { name: 'none', until: 0, dir: 1 };
+    this.nextIdle = performance.now() + 1200;
+    this.hop = 0; this.shake = 0;
     this.build();
     statEl.textContent = '1/' + ROWS;
 
@@ -110,7 +125,7 @@ export const wordle = {
     this.cur = this.cur.slice(0, -1);
   },
 
-  shake(){
+  shakeRow(){
     const row = this.grid.children[this.row];
     row.classList.remove('shake');
     void row.offsetWidth;                // restart the animation
@@ -119,8 +134,8 @@ export const wordle = {
   },
 
   submit(){
-    if (this.cur.length < COLS) return this.shake();
-    if (!ALLOWED.has(this.cur)){ this.setMood('sad', .8); return this.shake(); }
+    if (this.cur.length < COLS) return this.shakeRow();
+    if (!ALLOWED.has(this.cur)){ this.react('shake'); return this.shakeRow(); }
 
     const guess = this.cur;                 // captured: this.cur is cleared below,
     const marks = scoreGuess(guess, this.answer);   // before these timeouts fire
@@ -147,25 +162,66 @@ export const wordle = {
       } else if (last){
         this.done = true; this.setMood('lose', 99);
         finish('IT WAS ' + this.answer.toUpperCase(), 0, 'wordle', true, false);
+      } else if (marks.includes('hit')){
+        this.react('hop');                                   // a green: it perks up
+      } else if (marks.includes('near')){
+        this.setMood('happy', .9);
       } else {
-        this.setMood(marks.includes('hit') ? 'happy' : marks.includes('near') ? 'idle' : 'sad', 1.2);
+        this.react('shake');                                 // all grey: it slumps
       }
     }, COLS * 150 + 250);
   },
 
   setMood(m, secs){ this.mood = m; this.moodUntil = performance.now() + secs * 1000; },
+  react(kind){
+    const now = performance.now();
+    if (kind === 'hop'){ this.hop = now + 520; this.setMood('happy', 1.4); }
+    if (kind === 'shake'){ this.shake = now + 420; this.setMood('sad', 1.1); }
+  },
 
   tick(now){
     if (now > this.moodUntil && this.mood !== 'win' && this.mood !== 'lose') this.mood = 'idle';
-    const w = 30, cx = 22;
+
+    // pick a new idle once the last one has run its course
+    if (this.mood === 'idle' && now > this.idle.until){
+      if (now > this.nextIdle){
+        const pick = IDLES[Math.floor(Math.random() * IDLES.length)];
+        this.idle = { name: pick.name, dur: pick.dur * 1000,
+                      until: now + pick.dur * 1000, dir: Math.random() < .5 ? -1 : 1 };
+        this.nextIdle = this.idle.until + 900 + Math.random() * 2600;
+      } else {
+        this.idle.name = 'none';
+      }
+    }
+
+    const a = { mood: this.mood };
+    const el = (this.idle.until - now) / 1000;
+    let blink = now % 4600 < 130;                       // the baseline blink
+    if (this.mood === 'idle'){
+      if (this.idle.name === 'blink') blink = true;
+      if (this.idle.name === 'look')  a.look = this.idle.dir;
+      if (this.idle.name === 'ear')   a.ear = 1;
+      if (this.idle.name === 'sniff') a.sniff = Math.sin(now / 70) > 0 ? 1 : 0;
+      if (this.idle.name === 'doze'){ blink = true; a.sniff = el > .8 ? 0 : 1; }
+      if (this.idle.name === 'turn'){                  // swing out and back
+        const p = Math.max(0, Math.min(1, 1 - (this.idle.until - now) / this.idle.dur));
+        // quantised to the 4 poses in the reference: pixel art reads better stepped
+        a.turn = this.idle.dir * Math.round(Math.sin(p * Math.PI) * 3) / 3;
+      }
+    }
+    if (this.mood === 'win') a.ear = Math.sin(now / 130) > 0 ? 1 : 0;
+
+    const w = 48, cx0 = 32;          // u=2, so every feature is 2px and reads cleanly
+    const hop   = now < this.hop   ? -Math.abs(Math.sin((this.hop - now) / 90)) * 3 : 0;
+    const shake = now < this.shake ?  Math.sin((this.shake - now) / 28) * 2 : 0;
     const bob = this.mood === 'win' ? Math.sin(now / 160) * 1.5 : Math.sin(now / 900) * .6;
-    const cy = (this.mood === 'lose' ? 17 : 14) + bob;
+    const cy = (this.mood === 'lose' ? 26 : 22) + bob + hop;
 
     const prev = TARGET;
     setTarget(this.fctx);
     this.fctx.clearRect(0, 0, this.face.width, this.face.height);
-    drawCapy(cx, cy, w, now % 4200 < 130, this.mood);
-    if (this.mood === 'win') drawYuzu(cx, cy - 11, 3);
+    drawCapyFace(cx0 + shake, cy, w, blink, a);
+    if (this.mood === 'win') drawYuzu(cx0 + shake, cy - 17, 4);
     setTarget(prev);
 
     this.raf = requestAnimationFrame(t => this.tick(t));
