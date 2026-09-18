@@ -1,9 +1,10 @@
 /* Renders every procedurally-drawn sprite to a PNG at its native pixel grid,
-   and POSTs them to the local receiver started alongside this page. */
+   and POSTs them to the local receiver started alongside this page. The
+   capybara face isn't here: it's no longer procedural, it's drawn from the
+   PNGs in src/sprites/faces/, which are already the source of truth. */
 import { setTarget } from '../src/core/paint.js';
-import { drawCapy } from '../src/sprites/capy.js';
 import { drawYuzu, drawBubble, pine } from '../src/sprites/props.js';
-import { ICON_DRAW, CARD_DRAW, drawCardBack, paintOn } from '../src/ui/icons.js';
+import { ICON_DRAW, CARD_DRAW, drawCardBack } from '../src/ui/icons.js';
 import { CAPY_RUN } from '../src/sprites/capy.js';
 
 const RECEIVER = 'http://127.0.0.1:8787/save?name=';
@@ -32,26 +33,6 @@ function make(name, w, h, fn){
 
   made.push({ name, cv });
 }
-
-/* ---- the capybara face, every pose we can produce ---- */
-const FW = 38, FH = 46, fx = FW / 2 + 5, fy = 22;
-const face = (name, opts, blink = false) =>
-  make('capy-face-' + name, FW + 10, FH, () => drawCapy(fx, fy, FW, blink, { bust: false, ...opts }));
-
-face('idle',  {});
-face('happy', { mood: 'happy' });
-face('sad',   { mood: 'sad' });
-face('alert', { mood: 'alert' });
-face('win',   { mood: 'win' });
-face('lose',  { mood: 'lose' });
-face('blink', {}, true);
-face('ear-twitch', { ear: 1 });
-face('sniff', { sniff: 1 });
-face('look-left',  { look: -1 });
-face('look-right', { look:  1 });
-for (let i = 1; i <= 3; i++) face('turn-right-' + i, { turn: i / 3 });
-for (let i = 1; i <= 3; i++) face('turn-left-' + i,  { turn: -i / 3 });
-make('capy-face-bust', FW + 10, 60, () => drawCapy(fx, 22, FW, false, {}));
 
 /* ---- props ---- */
 make('yuzu', 16, 18, () => drawYuzu(8, 9, 6));

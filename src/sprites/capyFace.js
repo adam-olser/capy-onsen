@@ -12,10 +12,10 @@ import turnRight2Url from './faces/turn-right-2.png';
 import turnLeft1Url from './faces/turn-left-1.png';
 import turnLeft2Url from './faces/turn-left-2.png';
 
-/* AI-generated capybara expression set (idle/blink/happy/sad, four turn
-   steps, two look-aside steps), used by Bath Bubbles, Orange Catch and
-   Wordlebara. Provenance: generated in PixelLab from a user-supplied
-   reference photo -- see export/sprites-ai/README for that session.
+/* Capybara expression set (idle/blink/happy/sad, four turn steps, two
+   look-aside steps), used by Bath Bubbles, Orange Catch and Wordlebara --
+   drawn once as PNGs rather than procedurally, and now the source of truth
+   for the face; edit the files in ./faces/ directly.
 
    Every image is calibrated against the SAME (cx, cy, w) contract the old
    procedural drawCapy() used, so callers didn't need to change: `w` is head
