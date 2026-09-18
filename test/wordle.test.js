@@ -1,5 +1,5 @@
 import { test, expect } from 'bun:test';
-import { scoreGuess, mergeKeyState } from '../src/core/score.js';
+import { scoreGuess, mergeKeyState, pickHint } from '../src/core/score.js';
 import { caught, hitsObstacle } from '../src/core/hit.js';
 import { ALLOWED, ANSWERS } from '../src/data/words.js';
 
@@ -132,4 +132,24 @@ test('priority is turn > look > blink > mood, since only one frame can show', ()
 test('states with no dedicated art fall back to idle', () => {
   expect(pickFace(false, { ear: 1 })).toBe('idle');
   expect(pickFace(false, { sniff: 1 })).toBe('idle');
+});
+
+test('hint picks distinct not-yet-hit letters, in answer order', () => {
+  expect(pickHint('steam', {})).toEqual(['s', 't']);
+});
+
+test('hint skips letters already green on the keyboard', () => {
+  expect(pickHint('steam', { s: 'hit' })).toEqual(['t', 'e']);
+});
+
+test('hint never repeats a letter that appears twice in the answer', () => {
+  expect(pickHint('erase', {})).toEqual(['e', 'r']);
+});
+
+test('hint returns fewer than 2 once most letters are known', () => {
+  expect(pickHint('steam', { s: 'hit', t: 'hit', e: 'hit', a: 'hit' })).toEqual(['m']);
+});
+
+test('hint returns none once the whole word is known', () => {
+  expect(pickHint('steam', { s: 'hit', t: 'hit', e: 'hit', a: 'hit', m: 'hit' })).toEqual([]);
 });

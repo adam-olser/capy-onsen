@@ -1,5 +1,5 @@
 import { ALLOWED, ANSWERS } from '../data/words.js';
-import { scoreGuess, mergeKeyState } from '../core/score.js';
+import { scoreGuess, mergeKeyState, pickHint } from '../core/score.js';
 import { finish, statEl, over } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { setTarget, TARGET } from '../core/paint.js';
@@ -42,6 +42,7 @@ export const wordle = {
   start(){
     this.grid = document.getElementById('wgrid');
     this.keysEl = document.getElementById('wkeys');
+    this.hintBtn = document.getElementById('hintBtn');
     this.face = document.getElementById('capyface');
     this.fctx = this.face.getContext('2d');
 
@@ -59,9 +60,16 @@ export const wordle = {
     this.idle = { name: 'none', until: 0, dir: 1 };
     this.nextIdle = performance.now() + 1200;
     this.hop = 0; this.shake = 0;
+    this.hintUsed = false;
+    this.hintBtn.disabled = false;
+    this.hintBtn.textContent = 'HINT · 2 LETTERS';
     this.build();
     statEl.textContent = '1/' + ROWS;
 
+    if (!this.onHint){
+      this.onHint = () => this.useHint();
+      this.hintBtn.addEventListener('click', this.onHint);
+    }
     if (!this.onKeyDown){
       this.onKeyDown = e => {
         if (this.done || over()) return;
@@ -180,6 +188,22 @@ export const wordle = {
         this.react('shake');                                 // all grey: it slumps
       }
     }, COLS * 150 + 250);
+  },
+
+  useHint(){
+    if (this.hintUsed || this.done || over()) return;
+    const letters = pickHint(this.answer, this.keyState);
+    this.hintUsed = true;
+    this.hintBtn.disabled = true;
+    if (!letters.length){ this.hintBtn.textContent = 'HINT · KNOWN'; return; }
+    this.hintBtn.textContent = 'HINT · ' + letters.map(c => c.toUpperCase()).join(' ');
+    for (const ch of letters){
+      this.keyState[ch] = 'hit';
+      const k = this.keyEls[ch];
+      if (k){ k.classList.remove('hit', 'near', 'miss'); k.classList.add('hit'); }
+    }
+    this.react('hop');
+    sfx.match();
   },
 
   setMood(m, secs){ this.mood = m; this.moodUntil = performance.now() + secs * 1000; },

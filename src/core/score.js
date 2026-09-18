@@ -28,3 +28,15 @@ const RANK = { miss: 0, near: 1, hit: 2 };
 export function mergeKeyState(prev, next){
   return RANK[next] > RANK[prev ?? 'miss'] || prev == null ? next : prev;
 }
+
+/* Up to `n` distinct letters from `answer` the keyboard doesn't already show
+   as green, in answer order. Fewer come back once most of the word is known. */
+export function pickHint(answer, keyState, n = 2){
+  const out = [];
+  for (const ch of answer){
+    if (out.includes(ch) || keyState[ch] === 'hit') continue;
+    out.push(ch);
+    if (out.length >= n) break;
+  }
+  return out;
+}

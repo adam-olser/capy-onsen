@@ -183,6 +183,14 @@ body{
 .wt.hit  .mk{display:block;background:var(--cream)}
 .wt.near .mk{display:block;border:2px solid var(--cream)}
 
+.hint-btn{
+  font:inherit;font-size:clamp(8px,2.3vw,10px);letter-spacing:.04em;color:var(--yuzu);
+  background:transparent;border:1.5px solid var(--yuzu);border-radius:5px;
+  padding:5px 12px;cursor:pointer;flex:none;transition:background .2s,opacity .2s;
+}
+.hint-btn:active{transform:scale(.94)}
+.hint-btn:disabled{opacity:.45;cursor:default;transform:none}
+
 #wkeys{
   display:flex;flex-direction:column;gap:4px;width:100%;max-width:470px;flex:none;
   margin-top:auto;            /* keyboard sits at the bottom, within thumb reach */
