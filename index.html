@@ -16,7 +16,20 @@
 <canvas id="scene" aria-hidden="true"></canvas>
 
 <div class="corner">
-  <button class="icon-btn" id="sound" aria-label="Toggle sound" aria-pressed="false">🔇</button>
+  <button class="icon-btn" id="sound" aria-label="Toggle sound" aria-pressed="false">
+    <canvas width="32" height="32" aria-hidden="true"></canvas>
+  </button>
+  <button class="icon-btn" id="mixerBtn" aria-label="Sound settings" aria-expanded="false">
+    <canvas width="32" height="32" aria-hidden="true"></canvas>
+  </button>
+  <div id="mixer" class="popover" hidden>
+    <label>MUSIC
+      <input type="range" id="musicSlider" min="0" max="100" step="1">
+    </label>
+    <label>SFX
+      <input type="range" id="sfxSlider" min="0" max="100" step="1">
+    </label>
+  </div>
 </div>
 
 <div id="ui">

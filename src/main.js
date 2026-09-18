@@ -3,6 +3,7 @@ import { gameEl, winEl, boardEl, playEl, over, paintBest, registerGames } from '
 import { startArena, stopArena, restartArena, arenaResize, current } from './core/arena.js';
 import { sfx } from './audio/sfx.js';
 import { paintIcons } from './ui/icons.js';
+import { initSoundPanel } from './ui/soundPanel.js';
 import { startScene } from './scene/onsen.js';
 import { match } from './games/match.js';
 import { bubble } from './games/bubble.js';
@@ -75,4 +76,5 @@ addEventListener('keydown', e => {
 registerGames(Object.keys(GAMES));
 paintIcons();
 paintBest();
+initSoundPanel();
 startScene();

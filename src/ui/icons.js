@@ -5,6 +5,36 @@ import { drawYuzu } from '../sprites/props.js';
 import { CAPY_RUN, RUN_FRAME_W, RUN_FRAME_H } from '../sprites/capy.js';
 
 /* ================= menu icons, drawn with the same pixel painter ================= */
+/* Corner sound button: a pixel speaker, not an emoji. Two states share one
+   painter so on/off never drift out of sync visually. */
+export function drawSpeaker(on){
+  const body = '#f4e9d8', dark = '#16223a';
+  blob(4, 12, 7, 8, body, 2);
+  // cone: three widening rows read as a trapezoid at this scale
+  px(11, 13, 3, 6, body);
+  px(14, 11, 2, 10, body);
+  px(16, 9, 2, 14, body);
+  if (on){
+    px(21, 13, 2, 1, '#f2a03d'); px(21, 18, 2, 1, '#f2a03d');
+    px(20, 14, 1, 4, '#f2a03d');
+    px(25, 10, 2, 1, '#f2a03d'); px(25, 21, 2, 1, '#f2a03d');
+    px(24, 11, 1, 10, '#f2a03d'); px(27, 11, 1, 10, '#f2a03d');
+  } else {
+    px(21, 11, 2, 2, '#c96f4a'); px(25, 11, 2, 2, '#c96f4a');
+    px(22, 13, 2, 2, '#c96f4a'); px(24, 13, 2, 2, '#c96f4a');
+    px(21, 17, 2, 2, '#c96f4a'); px(25, 17, 2, 2, '#c96f4a');
+    px(22, 19, 2, 2, '#c96f4a'); px(24, 19, 2, 2, '#c96f4a');
+  }
+}
+
+/* Mixer button: two small equalizer sliders. */
+export function drawMixer(){
+  const track = '#4a6169', knob = '#f2a03d';
+  px(9, 5, 2, 22, track); px(20, 5, 2, 22, track);
+  blob(6, 10, 8, 5, knob, 1);
+  blob(17, 17, 8, 5, knob, 1);
+}
+
 export const ICON_DRAW = {
   match(){                                   // a face-down card behind a face-up one
     blob(1, 8, 14, 21, C.out, 3);
