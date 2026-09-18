@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "bun ./index.html",
     "build": "bun build ./index.html --outdir dist --minify",
-    "test": "bun test --path-ignore-patterns test/visual/**",
+    "test": "bun test --path-ignore-patterns 'test/visual/**'",
     "test:visual": "playwright test"
   },
   "devDependencies": {

@@ -1,6 +1,5 @@
-import { PIXEL } from './core/env.js';
 import { gameEl, winEl, boardEl, playEl, over, paintBest, registerGames } from './core/ui.js';
-import { startArena, stopArena, restartArena, arenaResize, current } from './core/arena.js';
+import { startArena, stopArena, restartArena, arenaResize, current, PW, PH } from './core/arena.js';
 import { sfx } from './audio/sfx.js';
 import { paintIcons } from './ui/icons.js';
 import { initSoundPanel } from './ui/soundPanel.js';
@@ -54,17 +53,25 @@ document.getElementById('menu').addEventListener('click', e => {
 document.getElementById('back').addEventListener('click', closeGame);
 document.getElementById('again').addEventListener('click', restart);
 
+/* Convert a page-space pointer event to arena units using the canvas's own
+   current CSS size, not the shared window-derived PIXEL constant -- since
+   arenaResize() snaps the canvas to an integer device-pixel box (see
+   core/arena.js), its actual rendered size no longer exactly matches
+   PIXEL * PW, and dividing by PIXEL instead of the canvas's real size drifts
+   the hit-test off from where the pixels are actually drawn on screen. */
+function toArena(e){
+  const r = playEl.getBoundingClientRect();
+  return [(e.clientX - r.left) * (PW / r.width), (e.clientY - r.top) * (PH / r.height)];
+}
 playEl.addEventListener('pointerdown', e => {
   e.preventDefault();
   if (over()) return;
   const g = current(); if (!g || !g.pointer) return;
-  const r = playEl.getBoundingClientRect();
-  g.pointer((e.clientX - r.left) / PIXEL, (e.clientY - r.top) / PIXEL);
+  g.pointer(...toArena(e));
 });
 playEl.addEventListener('pointermove', e => {
   const g = current(); if (!g || !g.move) return;
-  const r = playEl.getBoundingClientRect();
-  g.move((e.clientX - r.left) / PIXEL, (e.clientY - r.top) / PIXEL);
+  g.move(...toArena(e));
 });
 addEventListener('keydown', e => {
   if (!gameEl.classList.contains('on')) return;
@@ -83,3 +90,5 @@ startScene();
 // harmless in production, never written to
 window.__sceneDebug = sceneDebug;
 window.__faceSize = { FACE_LW, FACE_LH };
+window.__currentGame = current;
+window.__PW_PH = () => [PW, PH];
