@@ -1,4 +1,5 @@
 import { px, blob, ring, TARGET, setTarget } from '../core/paint.js';
+import { DPR } from '../core/env.js';
 import { C, CREAM } from '../core/palette.js';
 import { drawYuzu } from '../sprites/props.js';
 import { CAPY_RUN, RUN_FRAME_W, RUN_FRAME_H } from '../sprites/capy.js';
@@ -47,11 +48,23 @@ export const ICON_DRAW = {
   },
 };
 
+/* Every ICON_DRAW/CARD_DRAW fn assumes a fixed 0..32 logical grid. These
+   canvases are painted once (not per frame like the scene/arena), so rather
+   than a buffer+blit, backing store is DPR-scaled to the canvas's own CSS
+   size and the draw commands are scaled to match -- same fix, cheaper for
+   a one-shot paint. Falls back to the native attribute if it isn't laid out
+   yet (0x0 from getBoundingClientRect, e.g. painted before its pane opens). */
 export function paintOn(cv, fn){
   if (!cv || !fn) return;
+  const rect = cv.getBoundingClientRect();
+  const cssW = rect.width  || cv.width  || 32;
+  const cssH = rect.height || cv.height || 32;
+  const scale = (cssW * DPR) / 32;
+  cv.width = Math.max(1, Math.round(cssW * DPR));
+  cv.height = Math.max(1, Math.round(cssH * DPR));
   const g = cv.getContext('2d');
   g.imageSmoothingEnabled = false;
-  g.clearRect(0, 0, cv.width, cv.height);
+  g.scale(scale, scale);
   const prev = TARGET;
   setTarget(g);
   fn();

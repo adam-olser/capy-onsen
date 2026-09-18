@@ -3,8 +3,19 @@ import { scoreGuess, mergeKeyState } from '../core/score.js';
 import { finish, statEl, over } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { setTarget, TARGET } from '../core/paint.js';
+import { DPR } from '../core/env.js';
 import { drawCapyFace } from '../sprites/capyFace.js';
 import { drawYuzu } from '../sprites/props.js';
+
+/* Drawn at a fixed logical size (matches the cx0/w/cy constants in tick()),
+   then blitted up to the real, DPR-sized display canvas -- same buffer/blit
+   pattern the scene and the game arena use, so this canvas stops being the
+   one place still drawing straight into a browser-upscaled bitmap. */
+const FACE_LW = 64, FACE_LH = 44;
+const faceBuf = document.createElement('canvas');
+faceBuf.width = FACE_LW; faceBuf.height = FACE_LH;
+const faceBufCtx = faceBuf.getContext('2d');
+faceBufCtx.imageSmoothingEnabled = false;
 
 /* ================= 6. wordlebara =================
    Wordle rules. The capybara watches: it perks up on a green, slumps on an
@@ -33,7 +44,6 @@ export const wordle = {
     this.keysEl = document.getElementById('wkeys');
     this.face = document.getElementById('capyface');
     this.fctx = this.face.getContext('2d');
-    this.fctx.imageSmoothingEnabled = false;
 
     // the daily word first; replays are random so it stays playable
     if (this.seenDaily){
@@ -218,11 +228,25 @@ export const wordle = {
     const cy = (this.mood === 'lose' ? 26 : 22) + bob + hop;
 
     const prev = TARGET;
-    setTarget(this.fctx);
-    this.fctx.clearRect(0, 0, this.face.width, this.face.height);
+    setTarget(faceBufCtx);
+    faceBufCtx.clearRect(0, 0, FACE_LW, FACE_LH);
     drawCapyFace(cx0 + shake, cy, w, blink, a);
     if (this.mood === 'win') drawYuzu(cx0 + shake, cy - 17, 4);
     setTarget(prev);
+
+    // the display canvas is CSS-sized (clamp(), ties to viewport width), so
+    // it can change while the game is open -- resize it to match physical
+    // pixels whenever it does, and only then (the reassignment clears the
+    // canvas and resets imageSmoothingEnabled, so both stay behind the guard)
+    const rect = this.face.getBoundingClientRect();
+    const needW = Math.max(1, Math.round(rect.width * DPR));
+    const needH = Math.max(1, Math.round(rect.height * DPR));
+    if (this.face.width !== needW || this.face.height !== needH){
+      this.face.width = needW; this.face.height = needH;
+      this.fctx.imageSmoothingEnabled = false;
+    }
+    this.fctx.clearRect(0, 0, this.face.width, this.face.height);
+    this.fctx.drawImage(faceBuf, 0, 0, FACE_LW, FACE_LH, 0, 0, this.face.width, this.face.height);
 
     this.raf = requestAnimationFrame(t => this.tick(t));
   },

@@ -19,7 +19,17 @@ export function drawCapyPortrait(cx, cy, w){
   const scale = w / PORTRAIT_CHEEK;
   const dw = PORTRAIT_SRC * scale, dh = dw;
   const dx = cx - dw / 2, dy = cy - dh * .40;
+  // this draw is a DOWNSCALE (82px source -> ~44px here), and nearest-neighbor
+  // downscaling drops small isolated details unevenly depending on where they
+  // land on the sampling grid -- confirmed on this exact image: the left eye's
+  // 2px highlight survived, the right eye's didn't. Smoothing for just this
+  // one draw blends the highlight instead of losing it outright; the buffer
+  // this lands in still gets upscaled with nearest-neighbor afterward, so the
+  // rest of the scene keeps its crisp edges.
+  const smoothed = TARGET.imageSmoothingEnabled;
+  TARGET.imageSmoothingEnabled = true;
   TARGET.drawImage(CAPY_PORTRAIT, dx, dy, dw, dh);
+  TARGET.imageSmoothingEnabled = smoothed;
   capyPortraitBox = {x: dx, y: dy, w: dw, h: dh};
 }
 

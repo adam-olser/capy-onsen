@@ -1,9 +1,11 @@
 import { PW, PH, bg } from '../core/arena.js';
-import { px, blob, TARGET } from '../core/paint.js';
+import { px, blob, roundRect, TARGET } from '../core/paint.js';
 import { C } from '../core/palette.js';
 import { finish, over } from '../core/ui.js';
+import { T } from '../core/env.js';
 import { sfx } from '../audio/sfx.js';
 import { drawCapyRun, RUN_FRAME_W, RUN_FRAME_H } from '../sprites/capy.js';
+import { pine } from '../sprites/props.js';
 
 /* ================= 5. capy stack =================
    Onsen deck planks. Tap to drop the sliding one; whatever overhangs the
@@ -28,6 +30,9 @@ export const stack = {
     this.n = 0;
     this.cam = 0;
     this.flash = 0;
+    this.stars = Array.from({length: 28}, () => ({
+      x: Math.random() * PW, y: Math.random() * PH * .55, p: Math.random() * 6.283,
+    }));
     this.spawn(1);
   },
   spawn(dir){
@@ -91,17 +96,28 @@ export const stack = {
 
   plank(x, y, w, i){
     if (y < -this.lh || y > PH) return;
-    const light = i % 2 === 0;
-    blob(x, y, w, this.lh, C.out, 2);
-    blob(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, this.lh - 2), light ? '#8a6242' : '#6b4a33', 2);
-    if (w > 6) px(x + 2, y + 1, Math.max(1, w - 4), 1, light ? '#a87c52' : '#8a6242');
+    const tone = ['#c96f4a', '#b6603f', '#a4573a'][i % 3];
+    roundRect(x, y, w, this.lh, 2, '#5a3a24');
+    roundRect(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, this.lh - 2), 2, tone);
+    if (w > 6) px(x + 2, y + 1, Math.max(1, w - 4), 1, '#e8a34f');           // highlight
+    if (w > 10 && this.lh > 4) px(x + 3, y + this.lh - 2, w - 6, 1, '#00000022');
   },
 
   draw(){
     bg('#101a30', '#1f6b73');
 
-    // moon and a couple of pines for depth
+    // stars, twinkling the same way the menu scene's do
+    for (const s of this.stars){
+      TARGET.globalAlpha = .35 + .45 * Math.sin(T * .8 + s.p);
+      px(s.x, s.y, 1, 1, '#ffffff');
+      TARGET.globalAlpha = 1;
+    }
+
+    // moon and a treeline for depth
     blob(PW * .8 - 4, PH * .12 - 4, 9, 9, C.moon, 2);
+    const horizon = PH * .58;
+    for (const [fx, fh] of [[.06, .06], [.16, .045], [.86, .05], [.95, .065]])
+      pine(Math.round(PW * fx), Math.round(horizon), PH * fh, '#0a1320');
 
     for (let i = 0; i < this.stack.length; i++){
       const s = this.stack[i];

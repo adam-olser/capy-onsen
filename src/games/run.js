@@ -1,5 +1,5 @@
 import { PW, PH, bg } from '../core/arena.js';
-import { px, blob, TARGET } from '../core/paint.js';
+import { px, blob, roundRect, TARGET } from '../core/paint.js';
 import { C } from '../core/palette.js';
 import { finish, over } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
@@ -52,10 +52,13 @@ export const run = {
     if (this.next <= 0){
       this.next = Math.max(.55, 1.25 + Math.random() * .9 - this.v / this.cw * .12);
       // 0.22-0.50 body-heights tall, against a jump that clears 0.9
+      const roll = Math.random();
       this.obs.push({
         x: PW + 8,
         w: this.cw * (.15 + Math.random() * .15),
         h: this.cw * (.22 + Math.random() * .28),
+        kind: roll < .55 ? 'bush' : roll < .8 ? 'rock' : 'stump',
+        seed: Math.random() * 6.283,
       });
     }
     for (const o of this.obs) o.x -= this.v * dt;
@@ -88,16 +91,38 @@ export const run = {
     for (let i = 0; i < PW; i += 7){
       px((i - this.d * .9) % PW + (i - this.d * .9 < 0 ? PW : 0), this.gy + 3, 3, 1, '#2c4152');
     }
-    for (const o of this.obs){
-      blob(o.x, this.gy - o.h, o.w, o.h, C.out, 1);
-      blob(o.x + 1, this.gy - o.h + 1, Math.max(1, o.w - 2), Math.max(1, o.h - 1), '#3d6b3a', 1);
-    }
+    for (const o of this.obs) this.drawObstacle(o);
     for (const p of this.dust){
       TARGET.globalAlpha = Math.max(0, p.t / .45) * .6;
       px(p.x, p.y, 2, 2, '#6b8299');
       TARGET.globalAlpha = 1;
     }
     drawCapyRun(this.cx, this.gy - this.y, this.scale, this.y > 0 ? RUN_AIR_FRAME : Math.floor(this.phase));
+  },
+  /* Same bounding box as the collision test regardless of kind -- only the
+     art inside it varies, so a new look never quietly moves the hitbox. */
+  drawObstacle(o){
+    const x = o.x, y = this.gy - o.h, w = o.w, h = o.h;
+    if (o.kind === 'rock'){
+      blob(x, y, w, h, C.out, 2);
+      blob(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, h - 1), '#5c6a72', 2);
+      px(x + 1, y + 1, Math.max(1, w * .4), 1, '#8a99a1');            // sunlit edge
+      px(x + w * .3, y + h * .5, Math.max(1, w * .2), Math.max(1, h * .3), '#4a5860');
+    } else if (o.kind === 'stump'){
+      roundRect(x, y, w, h, 1, '#5a3a24');
+      roundRect(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, h - 1), 1, '#8a6242');
+      for (let ry = y + 2; ry < y + h - 1; ry += 3) px(x + 1, ry, Math.max(1, w - 2), 1, '#6b4a33');
+      px(x + 1, y + 1, Math.max(1, w - 2), 1, '#a87c52');             // cut-top highlight
+    } else {                                                          // bush, the common case
+      blob(x, y, w, h, C.out, 2);
+      blob(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, h - 1), '#3d6b3a', 2);
+      const dots = Math.max(2, Math.round(w / 3));
+      for (let i = 0; i < dots; i++){
+        const dx = x + 1 + (Math.sin(o.seed + i * 2.1) * .5 + .5) * Math.max(1, w - 3);
+        const dy = y + 1 + (Math.cos(o.seed * 1.3 + i * 1.7) * .5 + .5) * Math.max(1, h - 3);
+        px(dx, dy, 1, 1, i % 2 === 0 ? '#5f8f4e' : '#2c5228');
+      }
+    }
   },
   stat(){ return Math.round(this.d / (this.cw * .15)) + ' m'; },
 };

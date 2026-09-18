@@ -1,4 +1,4 @@
-import { PIXEL } from './env.js';
+import { PIXEL, DPR } from './env.js';
 import { setTarget } from './paint.js';
 import { playEl, statEl, over } from './ui.js';
 
@@ -11,7 +11,7 @@ let cur = null, raf = 0, lastT = 0, running = false;
 export function arenaResize(){
   const r = playEl.getBoundingClientRect();
   if (!r.width || !r.height) return;
-  playEl.width = r.width; playEl.height = r.height;
+  playEl.width = r.width * DPR; playEl.height = r.height * DPR;   // physical pixels
   PW = Math.max(60, Math.round(r.width / PIXEL));
   PH = Math.max(60, Math.round(r.height / PIXEL));
   pb.width = PW; pb.height = PH;

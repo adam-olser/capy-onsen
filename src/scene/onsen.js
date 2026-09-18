@@ -1,6 +1,6 @@
 import { px, blob, setTarget } from '../core/paint.js';
 import { C } from '../core/palette.js';
-import { RM, PIXEL, setPixel, T, setT } from '../core/env.js';
+import { RM, PIXEL, setPixel, T, setT, DPR } from '../core/env.js';
 import { drawCapyPortrait, capyPortraitBox } from '../sprites/capy.js';
 import { drawYuzu, pine } from '../sprites/props.js';
 import { sfx } from '../audio/sfx.js';
@@ -19,7 +19,7 @@ function resize(){
   setPixel(p);
   VW = Math.max(60, Math.round(w / p));
   VH = Math.max(80, Math.round(h / p));
-  cv.width = w; cv.height = h;
+  cv.width = w * DPR; cv.height = h * DPR;   // backing store matches physical pixels
   buf.width = VW; buf.height = VH;
   ctx.imageSmoothingEnabled = false;
   bx.imageSmoothingEnabled = false;

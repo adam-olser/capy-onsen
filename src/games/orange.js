@@ -1,5 +1,5 @@
 import { PW, PH, bg } from '../core/arena.js';
-import { px, TARGET } from '../core/paint.js';
+import { px, blob, TARGET } from '../core/paint.js';
 import { finish } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { caught } from '../core/hit.js';
@@ -25,7 +25,7 @@ export const orange = {
   start(){
     this.x = null; this.layout();
     this.items = []; this.fx = []; this.n = 0; this.lives = 3; this.spawn = .5; this.sp = 1;
-    this.stack = 0;
+    this.stack = 0; this.flash = 0;
   },
   update(dt){
     this.sp += dt * .05;
@@ -40,7 +40,7 @@ export const orange = {
       // swept test against the head top, so nothing tunnels through at speed
       const bottom = o.y + this.r, prev = bottom - o.v * dt;
       if (caught(prev, bottom, this.top, o.x - this.x, this.halfW)){
-        this.n++; this.stack++; sfx.match();
+        this.n++; this.stack++; this.flash = .18; sfx.match();
         if (this.stack >= STACK_MAX) this.tumble();
         return false;
       }
@@ -54,6 +54,7 @@ export const orange = {
 
     for (const f of this.fx){ f.vy += 160 * dt; f.x += f.vx * dt; f.y += f.vy * dt; }
     this.fx = this.fx.filter(f => f.y < PH + 8);
+    this.flash = Math.max(0, this.flash - dt);
   },
   tumble(){
     // a full head-load rolls off into the water
@@ -77,6 +78,15 @@ export const orange = {
     }
     // capybara sits a layer below every orange
     drawCapyFace(this.x, this.cy, this.cw, false);
+
+    // tray: an honest indicator of the actual catch width, not a fudged one --
+    // its edges sit exactly at this.x +/- this.halfW, the real hitbox
+    const u = this.u, tw = this.halfW * 2, ty = this.top + 3 * u;   // sit on the head, not floating above it
+    const lit = this.flash > 0;
+    blob(this.x - this.halfW, ty, tw, 3 * u, '#5a3a24', u);
+    blob(this.x - this.halfW + u, ty, tw - 2 * u, 2 * u, lit ? '#e8a34f' : '#c96f4a', u);
+    px(this.x - this.halfW, ty - u, u, u, '#5a3a24');       // little end-posts, like a tray's rim
+    px(this.x + this.halfW - u, ty - u, u, u, '#5a3a24');
     for (let i = 0; i < this.stack; i++){
       const [dx, dy] = STACK_POS[i];
       drawYuzu(this.x + dx * this.r * 1.9, this.top - this.r + dy * this.r * 1.8, this.r);
