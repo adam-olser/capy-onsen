@@ -19,17 +19,16 @@ export function drawCapyPortrait(cx, cy, w){
   const scale = w / PORTRAIT_CHEEK;
   const dw = PORTRAIT_SRC * scale, dh = dw;
   const dx = cx - dw / 2, dy = cy - dh * .40;
-  // this draw is a DOWNSCALE (82px source -> ~44px here), and nearest-neighbor
-  // downscaling drops small isolated details unevenly depending on where they
-  // land on the sampling grid -- confirmed on this exact image: the left eye's
-  // 2px highlight survived, the right eye's didn't. Smoothing for just this
-  // one draw blends the highlight instead of losing it outright; the buffer
-  // this lands in still gets upscaled with nearest-neighbor afterward, so the
-  // rest of the scene keeps its crisp edges.
-  const smoothed = TARGET.imageSmoothingEnabled;
-  TARGET.imageSmoothingEnabled = true;
+  // this draw is a downscale (82px source -> ~44-50px here); nearest-neighbor
+  // used to blend in with smoothing forced on for just this draw, to save a
+  // 2px eye highlight that got dropped unevenly by the downscale otherwise.
+  // That traded the crispness of the whole portrait -- eyes, nose, fur
+  // outline, all of it -- for one asymmetric 2px detail it didn't even fully
+  // preserve (one eye still came out dimmer than the other). The capybara is
+  // the largest, most prominent thing on the menu, so a soft portrait was a
+  // bad trade against the rest of the crisp, nearest-neighbor scene around
+  // it. Plain nearest-neighbor now, same as everything else in the buffer.
   TARGET.drawImage(CAPY_PORTRAIT, dx, dy, dw, dh);
-  TARGET.imageSmoothingEnabled = smoothed;
   capyPortraitBox = {x: dx, y: dy, w: dw, h: dh};
 }
 
