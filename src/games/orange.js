@@ -1,11 +1,20 @@
 import { PW, PH, bg } from '../core/arena.js';
-import { px, blob, TARGET } from '../core/paint.js';
+import { px, TARGET } from '../core/paint.js';
 import { finish } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { caught } from '../core/hit.js';
 import { capyHead } from '../sprites/capy.js';
 import { drawCapyFace } from '../sprites/capyFace.js';
 import { drawYuzu } from '../sprites/props.js';
+
+/* A flared-rim, tapered-wall U bowl, stepped one unit at a time -- at u=1
+   a smooth curve all but disappears, but two explicit steps read clearly. */
+function trayBowl(x, y, w, u, rim, body){
+  px(x, y, w, u, rim);                                     // flared outer rim
+  px(x + u, y + u, w - 2 * u, u, body);                     // wall, one step in
+  px(x + 2 * u, y + 2 * u, w - 4 * u, 2 * u, body);         // cupped base, two steps in
+  px(x + 2 * u, y + 3 * u, w - 4 * u, u, '#a4573a');        // shadow along the base
+}
 
 /* ================= 3. orange catch ================= */
 const STACK_MAX = 5;
@@ -80,13 +89,14 @@ export const orange = {
     drawCapyFace(this.x, this.cy, this.cw, false);
 
     // tray: an honest indicator of the actual catch width, not a fudged one --
-    // its edges sit exactly at this.x +/- this.halfW, the real hitbox
-    const u = this.u, tw = this.halfW * 2, ty = this.top + 3 * u;   // sit on the head, not floating above it
+    // its edges sit exactly at this.x +/- this.halfW, the real hitbox. Its rim
+    // sits one unit above this.top, the actual catch line, so a caught orange
+    // visibly sinks into the bowl instead of vanishing into the head above it.
+    const u = this.u, tw = this.halfW * 2, ty = this.top - u;
     const lit = this.flash > 0;
-    blob(this.x - this.halfW, ty, tw, 3 * u, '#5a3a24', u);
-    blob(this.x - this.halfW + u, ty, tw - 2 * u, 2 * u, lit ? '#e8a34f' : '#c96f4a', u);
-    px(this.x - this.halfW, ty - u, u, u, '#5a3a24');       // little end-posts, like a tray's rim
-    px(this.x + this.halfW - u, ty - u, u, u, '#5a3a24');
+    trayBowl(this.x - this.halfW, ty, tw, u, '#5a3a24', lit ? '#e8a34f' : '#c96f4a');
+    px(this.x - this.halfW, ty, u, u, '#3a2418');            // little end-posts, like a tray's rim
+    px(this.x + this.halfW - u, ty, u, u, '#3a2418');
     for (let i = 0; i < this.stack; i++){
       const [dx, dy] = STACK_POS[i];
       drawYuzu(this.x + dx * this.r * 1.9, this.top - this.r + dy * this.r * 1.8, this.r);
