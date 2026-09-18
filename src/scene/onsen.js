@@ -30,7 +30,10 @@ function resize(){
   ctx.imageSmoothingEnabled = false;
   bx.imageSmoothingEnabled = false;
 
-  const waterY = Math.round(VH * .58);
+  // .58 used to put the water (and the yuzu floating in it) low enough that
+  // the menu grid -- pinned to the bottom of the screen -- covered them
+  // entirely on shorter viewports; keep this in sync with frame()'s waterY
+  const waterY = Math.round(VH * .52);
   stars = Array.from({length: Math.round(VW * .35)}, () => ({
     x: Math.random() * VW, y: Math.random() * waterY * .8, p: Math.random() * 6.283,
   }));
@@ -55,7 +58,7 @@ let t0 = performance.now(), happyUntil = 0;
 function frame(now){
   setTarget(bx);
   setT(RM ? 3 : (now - t0) / 1000);
-  const waterY = Math.round(VH * .58);
+  const waterY = Math.round(VH * .52);
 
   // sky
   const g = bx.createLinearGradient(0, 0, 0, waterY);

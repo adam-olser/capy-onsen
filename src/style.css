@@ -5,7 +5,15 @@
   --scrim:rgba(12,22,34,.55);
   --gap:clamp(6px,1.8vw,11px);
 }
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+/* this is a game, not a document -- a long-press bringing up the browser's
+   own text-selection/copy/"look up" callout on any element (title, tiles,
+   sprites, keyboard keys...) breaks the illusion, so selection and the
+   iOS long-press callout are off everywhere; there's no text input in the
+   app that would ever need either */
+*{
+  box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
+  -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+}
 html,body{height:100%}
 body{
   background:var(--night); color:var(--cream);
@@ -93,7 +101,12 @@ body{
 /* ---------- game screen ---------- */
 #game{
   position:fixed;inset:0;display:none;flex-direction:column;
-  padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);
+  /* only the top keeps real breathing room (BACK/title/stat need to clear a
+     notch); sides and bottom just track the hardware safe area itself, not
+     extra padding -- the fixed 14px there was needless on small screens,
+     shrinking the one thing (the game canvas) that wants all the room it
+     can get, on every game since they all share this container */
+  padding:calc(env(safe-area-inset-top) + 14px) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   /* solid, not blurred -- backdrop-filter on a layer that gets resized a lot
      (the game canvas underneath reflows on every arenaResize()) is a known
      source of a one-frame flash-through on Safari/WebKit compositing; opaque
@@ -104,7 +117,12 @@ body{
 /* Bath Bubbles asks for fast taps right up to the canvas' top edge -- a
    12px gap let an overshot tap land on BACK instead and boot to the menu
    mid-game. Wider buffer so that can't happen. */
-.bar{display:flex;align-items:center;gap:10px;margin-bottom:26px}
+/* the canvas below wants to be edge-to-edge, but this row still needs its
+   own breathing room so BACK and the stat don't sit flush on the screen edge */
+.bar{
+  display:flex;align-items:center;gap:10px;margin-bottom:26px;
+  padding:0 calc(env(safe-area-inset-right) + 14px) 0 calc(env(safe-area-inset-left) + 14px);
+}
 .bar h2{font-size:clamp(11px,3.4vw,15px);letter-spacing:.06em;flex:1;text-align:center}
 .bar .stat{font-size:10px;color:var(--yuzu);min-width:56px;text-align:right}
 .back{
@@ -165,14 +183,28 @@ body{
 #word{
   display:none;flex-direction:column;align-items:center;
   flex:0 1 640px;              /* caps how far the block spreads on a big screen */
-  margin:auto 0;               /* and centres it in the stage */
+  margin:auto 0;               /* centres the whole block when .stage is taller than
+                                   the 640px cap -- on a short screen #word fills
+                                   .stage exactly (flex-shrink), so this is a no-op
+                                   there and #wtop below handles that case instead */
   gap:5px;min-height:0;width:100%;overflow:hidden;
+  padding:0 calc(env(safe-area-inset-right) + 10px) 0 calc(env(safe-area-inset-left) + 10px);
 }
-#capyface{width:clamp(42px,11vw,92px);height:auto;image-rendering:pixelated;flex:none}
+/* everything except the keyboard, so it -- not #wkeys -- absorbs the leftover
+   space: flex:1 makes this the one thing that grows, and centering its own
+   contents turns that leftover into reasonable breathing room around the
+   avatar/grid/hint instead of one big gap. #wkeys sits outside this wrapper,
+   flex:none, so it's never a candidate for that leftover and just settles
+   at the bottom, in thumb reach, the same as it always did */
+#wtop{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;min-height:0;width:100%;gap:5px;
+}
+#capyface{width:clamp(64px,16vw,120px);height:auto;image-rendering:pixelated;flex:none}
 /* rows split the available height, tiles take their size from the row, so the
    grid can never overflow and paint over the title bar or the keyboard */
 #wgrid{
-  display:flex;flex-direction:column;gap:4px;flex:1;min-height:0;width:100%;
+  display:flex;flex-direction:column;gap:4px;flex:0 1 296px;min-height:0;width:100%;
   align-items:center;max-height:296px;      /* 6 rows x 46px tile + 5 x 4px gap */
 }
 .wrow{display:flex;gap:4px;flex:1;min-height:0;justify-content:center}
@@ -211,7 +243,9 @@ body{
 
 #wkeys{
   display:flex;flex-direction:column;gap:4px;width:100%;max-width:470px;flex:none;
-  margin-top:auto;            /* keyboard sits at the bottom, within thumb reach */
+  /* sits below #wtop (flex:1) with no margin of its own needed -- #wtop
+     already claims and centres whatever leftover space there is, so the
+     keyboard just settles at the natural bottom, in thumb reach */
 }
 .krow{display:flex;gap:4px;justify-content:center}
 .k{

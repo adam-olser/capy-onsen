@@ -50,22 +50,40 @@ for (const c of CASES) {
       expect(corners).toEqual([255, 255, 255, 255]);
     });
 
-    test('game canvas: backing store is exactly cssSize * DPR', async ({ page }) => {
+    test('game canvas: fills its container edge-to-edge, backing store close to cssSize * DPR', async ({ page }) => {
       await page.goto('/');
       await page.getByRole('button', { name: /capy run/i }).click();
       await page.waitForTimeout(250);
 
       const info = await page.evaluate(() => {
         const play = document.getElementById('play');
+        const stage = document.querySelector('.stage');
+        const pr = play.getBoundingClientRect();
+        const sr = stage.getBoundingClientRect();
         return {
+          gapLeft: pr.left - sr.left, gapRight: sr.right - pr.right,
+          gapTop: pr.top - sr.top, gapBottom: sr.bottom - pr.bottom,
           backingW: play.width, backingH: play.height,
-          cssW: parseFloat(getComputedStyle(play).width),
-          cssH: parseFloat(getComputedStyle(play).height),
+          cssW: pr.width, cssH: pr.height,
           dpr: window.devicePixelRatio,
         };
       });
-      expect(info.backingW).toBeCloseTo(info.cssW * info.dpr, 0);
-      expect(info.backingH).toBeCloseTo(info.cssH * info.dpr, 0);
+
+      // no meaningful margin around the canvas -- see core/arena.js: the
+      // scale is fixed to the nominal design density first, then PW/PH are
+      // solved to fit the container at exactly that scale, which bounds the
+      // leftover to about half a *scale step* (a few CSS px at most) instead
+      // of half of PW/PH itself, which used to be tens of CSS px on a small
+      // screen -- a visible, wasted margin around the play area
+      for (const gap of [info.gapLeft, info.gapRight, info.gapTop, info.gapBottom]) {
+        expect(Math.abs(gap)).toBeLessThan(8);
+      }
+      // same rounding remainder shows up here too, in device px this time
+      // (PW/PH themselves are rounded to fit the container at the fixed
+      // scale, so the backing store can be a few device px off from an
+      // exact cssSize * DPR match, on either side)
+      expect(Math.abs(info.backingW - info.cssW * info.dpr)).toBeLessThan(10);
+      expect(Math.abs(info.backingH - info.cssH * info.dpr)).toBeLessThan(10);
     });
 
     test('Wordlebara face canvas: backing store is a whole multiple of the design grid', async ({ page }) => {

@@ -14,15 +14,24 @@ export function arenaResize(){
   // measuring playEl would feed that back in and shrink it every resize
   const r = stageEl.getBoundingClientRect();
   if (!r.width || !r.height) return;
-  PW = Math.max(60, Math.round(r.width / PIXEL));
-  PH = Math.max(60, Math.round(r.height / PIXEL));
+
+  // fix the device-pixels-per-unit scale to the nominal design density
+  // FIRST, independent of the container's size, then size PW/PH to fit the
+  // container at exactly that scale. Doing it the other way around (derive
+  // the scale from how many of an already-chosen PW/PH fit) bounds the
+  // rounding error to half of PW/PH -- tens of CSS px on a small screen,
+  // a very visible leftover margin, and the one bad case (the natural
+  // ratio landing right on a .5 boundary) can overshoot the container by
+  // nearly as much as flooring used to waste. Solving for PW/PH instead
+  // bounds the error to half a *scale step* -- a couple of device px,
+  // consistently, at any container size -- which is what a fractional
+  // buffer->screen scale actually costs: it's what makes pixel art look
+  // "swimmy" on odd or high-res screens.
+  const scale = Math.max(1, Math.round(PIXEL * DPR));
+  PW = Math.max(60, Math.round((r.width * DPR) / scale));
+  PH = Math.max(60, Math.round((r.height * DPR) / scale));
   pb.width = PW; pb.height = PH;
 
-  // a fractional buffer->screen scale is what makes pixel art look "swimmy"
-  // on odd screen sizes -- flooring to a whole device-pixel-per-unit scale,
-  // then sizing the canvas's CSS box to match exactly, keeps every logical
-  // pixel a uniform size no matter how big or oddly-sized the display is
-  const scale = Math.max(1, Math.floor(Math.min((r.width * DPR) / PW, (r.height * DPR) / PH)));
   playEl.width = PW * scale; playEl.height = PH * scale;
   playEl.style.width = (PW * scale / DPR) + 'px';
   playEl.style.height = (PH * scale / DPR) + 'px';
