@@ -11,7 +11,7 @@ import { drawYuzu } from '../sprites/props.js';
    then blitted up to the real, DPR-sized display canvas -- same buffer/blit
    pattern the scene and the game arena use, so this canvas stops being the
    one place still drawing straight into a browser-upscaled bitmap. */
-const FACE_LW = 64, FACE_LH = 44;
+export const FACE_LW = 64, FACE_LH = 44;
 const faceBuf = document.createElement('canvas');
 faceBuf.width = FACE_LW; faceBuf.height = FACE_LH;
 const faceBufCtx = faceBuf.getContext('2d');

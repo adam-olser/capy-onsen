@@ -222,3 +222,9 @@ export function startScene(){
   resize();
   requestAnimationFrame(frame);
 }
+
+/* exposes the current integer buffer->canvas scale for the visual tests --
+   see test/visual/pixel-scale.spec.js */
+export function sceneDebug(){
+  return { VW, VH, scale, cvW: cv.width, cvH: cv.height };
+}

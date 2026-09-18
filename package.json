@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "bun ./index.html",
     "build": "bun build ./index.html --outdir dist --minify",
-    "test": "bun test"
+    "test": "bun test --path-ignore-patterns test/visual/**",
+    "test:visual": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0"
   }
 }

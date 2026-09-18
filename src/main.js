@@ -4,13 +4,13 @@ import { startArena, stopArena, restartArena, arenaResize, current } from './cor
 import { sfx } from './audio/sfx.js';
 import { paintIcons } from './ui/icons.js';
 import { initSoundPanel } from './ui/soundPanel.js';
-import { startScene } from './scene/onsen.js';
+import { startScene, sceneDebug } from './scene/onsen.js';
 import { match } from './games/match.js';
 import { bubble } from './games/bubble.js';
 import { orange } from './games/orange.js';
 import { run } from './games/run.js';
 import { stack } from './games/stack.js';
-import { wordle } from './games/wordle.js';
+import { wordle, FACE_LW, FACE_LH } from './games/wordle.js';
 
 /* ================= routing ================= */
 const GAMES = { match, bubble, orange, run, stack, wordle };
@@ -78,3 +78,8 @@ paintIcons();
 paintBest();
 initSoundPanel();
 startScene();
+
+// read-only hook for the Playwright pixel-scale tests (test/visual/) --
+// harmless in production, never written to
+window.__sceneDebug = sceneDebug;
+window.__faceSize = { FACE_LW, FACE_LH };
