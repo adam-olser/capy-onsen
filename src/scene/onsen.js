@@ -15,7 +15,11 @@ let VW = 120, VH = 220, scale = 1, stars = [], steam = [], yuzu = [], fireflies 
 
 function resize(){
   const w = innerWidth, h = innerHeight;
-  const p = Math.max(3, Math.round(Math.min(w, h) / 110));   // nominal CSS px per logical unit
+  // nominal CSS px per logical unit -- capped at 4 (roughly what a 425px-wide
+  // phone already gets) so a wider/taller viewport reveals more of the scene
+  // at the same fine density, instead of blowing the same low logical
+  // resolution up into visibly chunkier blocks the bigger the screen gets
+  const p = Math.max(3, Math.min(4, Math.round(Math.min(w, h) / 110)));
   setPixel(p);
   cv.width = w * DPR; cv.height = h * DPR;   // backing store matches physical pixels, full-bleed
 

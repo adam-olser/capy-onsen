@@ -48,6 +48,16 @@ for (const c of CASES) {
           .map(([x, y]) => g.getImageData(x, y, 1, 1).data[3]);
       });
       expect(corners).toEqual([255, 255, 255, 255]);
+
+      // the nominal CSS-px-per-logical-unit density is capped at 4 (see the
+      // comment in onsen.js's resize()) so a wide/tall viewport reveals more
+      // of the scene at the same fine density, instead of the same low
+      // logical resolution blown up into visibly chunkier blocks the bigger
+      // the screen gets -- this held everything from a phone to an
+      // ultrawide desktop in the CASES above 3.5px either side of that cap
+      const cssPxPerUnit = (dbg.cvW / dbg.VW) / (await page.evaluate(() => window.devicePixelRatio));
+      expect(cssPxPerUnit).toBeGreaterThanOrEqual(2.5);
+      expect(cssPxPerUnit).toBeLessThanOrEqual(4.5);
     });
 
     test('game canvas: fills its container edge-to-edge, backing store close to cssSize * DPR', async ({ page }) => {
