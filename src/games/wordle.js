@@ -261,10 +261,13 @@ export const wordle = {
     // the display canvas is CSS-sized (clamp(), ties to viewport width), so
     // it can change while the game is open -- resize it to match physical
     // pixels whenever it does, and only then (the reassignment clears the
-    // canvas and resets imageSmoothingEnabled, so both stay behind the guard)
+    // canvas and resets imageSmoothingEnabled, so both stay behind the guard).
+    // needW/needH are kept exact multiples of FACE_LW/FACE_LH (not just
+    // proportional to the CSS box) so the blit below is a whole-number
+    // scale -- a fractional one is what made this face look uneven.
     const rect = this.face.getBoundingClientRect();
-    const needW = Math.max(1, Math.round(rect.width * DPR));
-    const needH = Math.max(1, Math.round(rect.height * DPR));
+    const scale = Math.max(1, Math.round((rect.width * DPR) / FACE_LW));
+    const needW = FACE_LW * scale, needH = FACE_LH * scale;
     if (this.face.width !== needW || this.face.height !== needH){
       this.face.width = needW; this.face.height = needH;
       this.fctx.imageSmoothingEnabled = false;

@@ -7,6 +7,7 @@ export const winEl   = document.getElementById('win');
 export const gameEl  = document.getElementById('game');
 export const boardEl = document.getElementById('board');
 export const playEl  = document.getElementById('play');
+export const stageEl = document.querySelector('.stage');
 
 let GAME_KEYS = [];
 export function registerGames(keys){ GAME_KEYS = keys; }

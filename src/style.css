@@ -26,7 +26,10 @@ body{
 /* ---------- title ---------- */
 .title{
   text-align:center;line-height:1.1;text-shadow:0 0 14px rgba(242,160,61,.45),0 2px 0 rgba(0,0,0,.5);
-  padding:0 96px 0 0;                 /* the corner sits only on the right: pad, don't centre-narrow */
+  /* the corner buttons are a fixed ~96px reserved on the right only; shifting
+     the (still full-width, still wrappable) text left by half that re-centres
+     it on the visible area instead of the whole viewport, at any screen size */
+  transform:translateX(-48px);
 }
 /* no interactive content in the title -- beats "#ui > *{pointer-events:auto}"
    on specificity, so clicks fall through to the corner buttons beneath it */
@@ -91,7 +94,11 @@ body{
 #game{
   position:fixed;inset:0;display:none;flex-direction:column;
   padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 14px);
-  background:rgba(10,22,30,.9);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+  /* solid, not blurred -- backdrop-filter on a layer that gets resized a lot
+     (the game canvas underneath reflows on every arenaResize()) is a known
+     source of a one-frame flash-through on Safari/WebKit compositing; opaque
+     background costs nothing visually since .9 already hid almost all of it */
+  background:rgba(10,22,30,.97);
 }
 #game.on{display:flex}
 /* Bath Bubbles asks for fast taps right up to the canvas' top edge -- a
@@ -109,7 +116,10 @@ body{
 /* ---------- memory match ---------- */
 .stage{position:relative;flex:1;display:flex;flex-direction:column;min-height:0}
 #play{
-  flex:1;width:100%;display:none;border-radius:10px;
+  /* sized in device-integer px by arenaResize(), not stretched -- flex:1 +
+     100% would refight that every resize, so let it be its own intrinsic
+     size and just centre it in .stage */
+  flex:none;margin:auto;max-width:100%;max-height:100%;display:none;border-radius:10px;
   image-rendering:pixelated;touch-action:none;
 }
 #board{

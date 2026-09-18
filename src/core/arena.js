@@ -1,6 +1,6 @@
 import { PIXEL, DPR } from './env.js';
 import { setTarget } from './paint.js';
-import { playEl, statEl, over } from './ui.js';
+import { playEl, stageEl, statEl, over } from './ui.js';
 
 /* ================= canvas arena ================= */
 const pb = document.createElement('canvas'), pbx = pb.getContext('2d');
@@ -9,17 +9,30 @@ export let PW = 0, PH = 0;
 let cur = null, raf = 0, lastT = 0, running = false;
 
 export function arenaResize(){
-  const r = playEl.getBoundingClientRect();
+  // measured against .stage, not the canvas itself -- once we size playEl to
+  // an integer device-pixel box below, it stops filling .stage exactly, and
+  // measuring playEl would feed that back in and shrink it every resize
+  const r = stageEl.getBoundingClientRect();
   if (!r.width || !r.height) return;
-  playEl.width = r.width * DPR; playEl.height = r.height * DPR;   // physical pixels
   PW = Math.max(60, Math.round(r.width / PIXEL));
   PH = Math.max(60, Math.round(r.height / PIXEL));
   pb.width = PW; pb.height = PH;
+
+  // a fractional buffer->screen scale is what makes pixel art look "swimmy"
+  // on odd screen sizes -- flooring to a whole device-pixel-per-unit scale,
+  // then sizing the canvas's CSS box to match exactly, keeps every logical
+  // pixel a uniform size no matter how big or oddly-sized the display is
+  const scale = Math.max(1, Math.floor(Math.min((r.width * DPR) / PW, (r.height * DPR) / PH)));
+  playEl.width = PW * scale; playEl.height = PH * scale;
+  playEl.style.width = (PW * scale / DPR) + 'px';
+  playEl.style.height = (PH * scale / DPR) + 'px';
+
   pctx.imageSmoothingEnabled = false; pbx.imageSmoothingEnabled = false;
   if (cur && cur.layout) cur.layout();
 }
-// the game panel keeps growing after it opens, so watch the canvas itself
-new ResizeObserver(() => { if (running) arenaResize(); }).observe(playEl);
+// the game panel keeps growing after it opens, so watch the stable container,
+// not the canvas -- see the comment in arenaResize() for why
+new ResizeObserver(() => { if (running) arenaResize(); }).observe(stageEl);
 
 function tick(now){
   if (!running) return;

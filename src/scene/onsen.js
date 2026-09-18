@@ -11,15 +11,21 @@ const ctx = cv.getContext('2d');
 const buf = document.createElement('canvas');
 const bx = buf.getContext('2d');
 
-let VW = 120, VH = 220, stars = [], steam = [], yuzu = [], fireflies = [];
+let VW = 120, VH = 220, scale = 1, stars = [], steam = [], yuzu = [], fireflies = [];
 
 function resize(){
   const w = innerWidth, h = innerHeight;
-  const p = Math.max(3, Math.round(Math.min(w, h) / 110));
+  const p = Math.max(3, Math.round(Math.min(w, h) / 110));   // nominal CSS px per logical unit
   setPixel(p);
-  VW = Math.max(60, Math.round(w / p));
-  VH = Math.max(80, Math.round(h / p));
-  cv.width = w * DPR; cv.height = h * DPR;   // backing store matches physical pixels
+  cv.width = w * DPR; cv.height = h * DPR;   // backing store matches physical pixels, full-bleed
+
+  // a fractional buffer->canvas scale is what made this background look
+  // "swimmy" on odd/high-res screens -- pick a whole device pixels-per-unit
+  // scale instead, and size the buffer to fully cover the canvas at that
+  // scale (any excess on the far edge is simply clipped by drawImage below)
+  scale = Math.max(1, Math.round(p * DPR));
+  VW = Math.max(60, Math.ceil(cv.width / scale));
+  VH = Math.max(80, Math.ceil(cv.height / scale));
   buf.width = VW; buf.height = VH;
   ctx.imageSmoothingEnabled = false;
   bx.imageSmoothingEnabled = false;
@@ -198,7 +204,7 @@ function frame(now){
   }
 
   ctx.clearRect(0, 0, cv.width, cv.height);
-  ctx.drawImage(buf, 0, 0, VW, VH, 0, 0, cv.width, cv.height);
+  ctx.drawImage(buf, 0, 0, VW, VH, 0, 0, VW * scale, VH * scale);
   requestAnimationFrame(frame);
 }
 
