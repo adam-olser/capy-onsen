@@ -12,6 +12,9 @@ import { run } from './games/run.js';
 import { stack } from './games/stack.js';
 import { wordle, FACE_LW, FACE_LH } from './games/wordle.js';
 
+// older Safari fires this non-standard event on pinch, ignoring touch-action
+addEventListener('gesturestart', e => e.preventDefault());
+
 /* ================= routing ================= */
 const GAMES = { match, bubble, orange, run, stack, wordle };
 const wordEl = document.getElementById('word');
@@ -71,11 +74,17 @@ creditsBtn.addEventListener('click', openCredits);
 creditsClose.addEventListener('click', closeCredits);
 creditsModal.addEventListener('click', e => { if (e.target === creditsModal) closeCredits(); });
 
-/* Fullscreen toggle -- hidden entirely where the API isn't there at all
-   (notably iOS Safari outside a home-screen install), rather than showing
-   a button that would just silently do nothing. */
+/* Fullscreen toggle -- hidden entirely where it's not actually usable,
+   rather than showing a button that would just silently do nothing.
+   iOS Safari AND iOS Chrome (same WebKit engine underneath, so same
+   limitation) both define document.documentElement.requestFullscreen as a
+   function, but it always rejects there -- WebKit has never implemented
+   the Fullscreen API for anything but a <video> element. fullscreenEnabled
+   is the actual capability flag (also correctly false when a host page
+   embeds this in an iframe without fullscreen permission), so check that
+   instead of just whether the method exists. */
 const fsBtn = document.getElementById('fullscreenBtn');
-if (document.documentElement.requestFullscreen){
+if (document.fullscreenEnabled && document.documentElement.requestFullscreen){
   fsBtn.removeAttribute('hidden');
   const fsIcon = fsBtn.querySelector('canvas');
   const paintFs = () => {

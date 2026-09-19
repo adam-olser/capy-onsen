@@ -4,6 +4,14 @@
   --night:#16223a; --ink:#201811;
   --scrim:rgba(12,22,34,.55);
   --gap:clamp(6px,1.8vw,11px);
+  /* this app is always dark-themed, never light -- without this declared,
+     a device set to OS dark mode can make the browser paint an unstyled
+     canvas's "empty" (transparent) pixels using its own dark-mode system
+     background instead of true transparency, so a sparse icon (like the
+     fullscreen brackets) all but disappears against the button's own
+     already-dark background. Declaring the scheme up front stops the
+     browser from guessing. */
+  color-scheme:dark;
 }
 /* this is a game, not a document -- a long-press bringing up the browser's
    own text-selection/copy/"look up" callout on any element (title, tiles,
@@ -14,7 +22,13 @@
   box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;
   -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
 }
-html,body{height:100%}
+html,body{
+  height:100%;
+  /* pan freely, but no pinch-zoom or double-tap-zoom -- maximum-scale=1 in
+     the viewport meta tag is the primary block, this is the CSS-level
+     backstop some browsers need on top of it */
+  touch-action:pan-x pan-y;
+}
 body{
   background:var(--night); color:var(--cream);
   font-family:'Silkscreen',ui-monospace,monospace;
