@@ -1,10 +1,10 @@
 import { gameEl, winEl, boardEl, playEl, over, paintBest, registerGames } from './core/ui.js';
-import { startArena, stopArena, restartArena, arenaResize, current, PW, PH } from './core/arena.js';
+import { startArena, stopArena, restartArena, current, PW, PH } from './core/arena.js';
 import { sfx } from './audio/sfx.js';
 import { setScene, musicDebug } from './audio/music.js';
 import { paintIcons, paintOn, drawFullscreen } from './ui/icons.js';
 import { initSoundPanel } from './ui/soundPanel.js';
-import { startScene, sceneDebug, resize as resizeScene } from './scene/onsen.js';
+import { startScene, sceneDebug } from './scene/onsen.js';
 import { match } from './games/match.js';
 import { bubble } from './games/bubble.js';
 import { orange } from './games/orange.js';
@@ -104,21 +104,12 @@ fsBtn.addEventListener('click', () => {
   }
   document.documentElement.requestFullscreen().catch(() => fsHelpModal.removeAttribute('hidden'));
 });
-document.addEventListener('fullscreenchange', () => {
-  paintFs();
-  // Entering/exiting fullscreen changes the viewport size by however much
-  // room the address bar/toolbar used to take -- the game arena's own
-  // ResizeObserver picks that up on its own, but the menu scene canvas only
-  // redraws on the window's own 'resize' event, which some browsers fire
-  // late (or not at all) for a fullscreen transition specifically, leaving
-  // a dead margin the size of that reclaimed toolbar until something else
-  // happens to trigger a resize. Force both, a frame after the transition
-  // actually lands so innerWidth/innerHeight already reflect it.
-  requestAnimationFrame(() => {
-    resizeScene();
-    if (gameEl.classList.contains('on')) arenaResize();
-  });
-});
+// resizing the arena/menu scene on a fullscreen transition is handled by
+// their own ResizeObservers (see arena.js and onsen.js) -- forcing it again
+// here too, on a guessed one-frame delay, raced the observer's own correct
+// callback and could overwrite it with a still-mid-transition size on
+// desktop, where the OS-level fullscreen animation can outlast a frame.
+document.addEventListener('fullscreenchange', paintFs);
 
 /* Convert a page-space pointer event to arena units using the canvas's own
    current CSS size, not the shared window-derived PIXEL constant -- since

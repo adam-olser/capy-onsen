@@ -13,7 +13,7 @@ const bx = buf.getContext('2d');
 
 let VW = 120, VH = 220, scale = 1, stars = [], steam = [], yuzu = [], fireflies = [];
 
-export function resize(){
+function resize(){
   const w = innerWidth, h = innerHeight;
   // nominal CSS px per logical unit -- capped at 4 (roughly what a 425px-wide
   // phone already gets) so a wider/taller viewport reveals more of the scene
@@ -55,7 +55,12 @@ export function resize(){
     p: Math.random() * 6.3, s: .4 + Math.random() * .7,
   }));
 }
-addEventListener('resize', resize, {passive: true});
+// a plain 'resize' event listener missed real size changes that come with
+// no such event at all -- entering/exiting fullscreen on some browsers,
+// and the settle-late viewport iOS gives a home-screen-launched web app
+// right after launch. ResizeObserver reports the actual final layout size
+// whenever it changes, for whatever reason, so it covers all of those.
+new ResizeObserver(resize).observe(document.documentElement);
 
 let t0 = performance.now(), happyUntil = 0;
 
