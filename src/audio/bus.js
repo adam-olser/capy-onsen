@@ -8,8 +8,8 @@ let actx = null;
 let master = null, musicGain = null, sfxGain = null;
 
 export let soundOn = store.get('capy.sound') === '1';
-export let musicVol = clamp01(parseFloat(store.get('capy.vol.music') ?? '0.5'));
-export let sfxVol   = clamp01(parseFloat(store.get('capy.vol.sfx')   ?? '0.85'));
+export let musicVol = clamp01(parseFloat(store.get('capy.vol.music') ?? '0.25'));
+export let sfxVol   = clamp01(parseFloat(store.get('capy.vol.sfx')   ?? '0.5'));
 
 function clamp01(v){ return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0.5; }
 
