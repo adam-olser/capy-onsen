@@ -35,6 +35,23 @@ export function drawMixer(){
   blob(17, 17, 8, 5, knob, 1);
 }
 
+/* Fullscreen toggle: four corner brackets, pointing out when not
+   fullscreen (expand) and in when already fullscreen (compress). */
+export function drawFullscreen(active){
+  const c = '#f4e9d8';
+  if (!active){
+    px(3, 3, 7, 2, c); px(3, 3, 2, 7, c);
+    px(22, 3, 7, 2, c); px(27, 3, 2, 7, c);
+    px(3, 27, 7, 2, c); px(3, 22, 2, 7, c);
+    px(22, 27, 7, 2, c); px(27, 22, 2, 7, c);
+  } else {
+    px(6, 9, 7, 2, c); px(6, 9, 2, 7, c);
+    px(19, 9, 7, 2, c); px(24, 9, 2, 7, c);
+    px(6, 21, 7, 2, c); px(6, 16, 2, 7, c);
+    px(19, 21, 7, 2, c); px(24, 16, 2, 7, c);
+  }
+}
+
 export const ICON_DRAW = {
   match(){                                   // a face-down card behind a face-up one
     blob(1, 8, 14, 21, C.out, 3);

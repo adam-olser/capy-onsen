@@ -2,7 +2,7 @@ import { gameEl, winEl, boardEl, playEl, over, paintBest, registerGames } from '
 import { startArena, stopArena, restartArena, arenaResize, current, PW, PH } from './core/arena.js';
 import { sfx } from './audio/sfx.js';
 import { setScene, musicDebug } from './audio/music.js';
-import { paintIcons } from './ui/icons.js';
+import { paintIcons, paintOn, drawFullscreen } from './ui/icons.js';
 import { initSoundPanel } from './ui/soundPanel.js';
 import { startScene, sceneDebug } from './scene/onsen.js';
 import { match } from './games/match.js';
@@ -70,6 +70,26 @@ function closeCredits(){
 creditsBtn.addEventListener('click', openCredits);
 creditsClose.addEventListener('click', closeCredits);
 creditsModal.addEventListener('click', e => { if (e.target === creditsModal) closeCredits(); });
+
+/* Fullscreen toggle -- hidden entirely where the API isn't there at all
+   (notably iOS Safari outside a home-screen install), rather than showing
+   a button that would just silently do nothing. */
+const fsBtn = document.getElementById('fullscreenBtn');
+if (document.documentElement.requestFullscreen){
+  fsBtn.removeAttribute('hidden');
+  const fsIcon = fsBtn.querySelector('canvas');
+  const paintFs = () => {
+    const active = !!document.fullscreenElement;
+    paintOn(fsIcon, () => drawFullscreen(active));
+    fsBtn.setAttribute('aria-pressed', String(active));
+  };
+  paintFs();
+  fsBtn.addEventListener('click', () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen().catch(() => {});
+  });
+  document.addEventListener('fullscreenchange', paintFs);
+}
 
 /* Convert a page-space pointer event to arena units using the canvas's own
    current CSS size, not the shared window-derived PIXEL constant -- since

@@ -285,6 +285,14 @@ body{
      already claims and centres whatever leftover space there is, so the
      keyboard just settles at the natural bottom, in thumb reach */
 }
+@media (max-width:619px){
+  /* env(safe-area-inset-bottom) only covers the OS's own reserved area (a
+     home indicator, say) -- it knows nothing about the browser's own
+     address/tab bar, which on mobile Chrome/Safari can still sit right
+     under the keyboard's bottom row. A flat margin buys clearance from
+     that regardless of what the safe-area env vars report. */
+  #wkeys{margin-bottom:16px}
+}
 .krow{display:flex;gap:4px;justify-content:center}
 .k{
   font:inherit;font-size:clamp(8px,2.5vw,11px);color:var(--cream);cursor:pointer;
@@ -300,9 +308,11 @@ body{
 /* ---------- sound mixer popover ---------- */
 .icon-btn canvas{width:22px;height:22px;image-rendering:pixelated;display:block}
 #mixer{
-  /* corner is a column now (2x38px buttons + 8px gap = 84px tall), so the
+  /* corner is a column now (up to 3x38px buttons + 2x8px gaps = 130px tall
+     with the fullscreen button showing; a couple of spare px when it's
+     hidden just leaves a slightly bigger gap, not a broken layout), so the
      popover needs to clear the whole stack, not just one button */
-  position:fixed;top:calc(env(safe-area-inset-top) + 104px);right:14px;
+  position:fixed;top:calc(env(safe-area-inset-top) + 150px);right:14px;
   display:flex;flex-direction:column;gap:12px;
   background:var(--scrim);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
   border:2px solid rgba(244,233,216,.28);border-radius:10px;
