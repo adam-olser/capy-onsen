@@ -15,7 +15,14 @@ export const run = {
     this.scale = Math.max(1, Math.min(3, Math.round(PH * .15 / RUN_FRAME_H)));
     this.cw = RUN_FRAME_W * this.scale;
     this.u  = this.scale;
-    this.cx = Math.round(PW * .24);
+    // obstacles spawn at the right edge (PW) and close in at a speed tied to
+    // cw (from PH), but the runway between spawn and player is PW * .76 --
+    // on a narrow mobile-portrait screen PW is small while cw/speed isn't,
+    // so the runway shrinks and obstacles arrive with much less warning
+    // than on a wide desktop window. Guarantee a minimum runway in body-
+    // widths by pulling the player leftward; this only ever pulls cx down
+    // from its usual 24%, never past it, so desktop is unaffected.
+    this.cx = Math.round(Math.min(PW * .24, Math.max(0, PW - this.cw * 7)));
     this.gy = Math.round(PH * .78);
     // jump clears ~0.9 body-heights in ~0.78s, whatever the screen size
     this.jv = 4.62 * this.cw;
