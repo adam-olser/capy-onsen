@@ -29,7 +29,14 @@ export const orange = {
     this.top = this.cy - head.hh;            // top of the head: the actual catch line
     this.halfW = head.hw;                    // head half-width
     this.r = Math.max(3, Math.round(this.cw * .13));
-    this.x = Math.max(this.halfW, Math.min(PW - this.halfW, this.x == null ? PW / 2 : this.x));
+    // catch/spawn happen within this band, not the raw canvas edges -- on a
+    // wide desktop window PW dwarfs PH and the tray (sized off PH) shrinks
+    // to a sliver of it, so yuzu spawn corner to corner and chasing them
+    // means sweeping across the whole monitor. Cap the band by PH like
+    // Bath Bubbles' wander band, so it stays a sane, catchable width.
+    this.cx0 = PW / 2;
+    this.bandHalf = Math.max(this.halfW, Math.min(PW / 2, PH * .8));
+    this.x = Math.max(this.cx0 - this.bandHalf + this.halfW, Math.min(this.cx0 + this.bandHalf - this.halfW, this.x == null ? this.cx0 : this.x));
   },
   start(){
     this.x = null; this.layout();
@@ -41,7 +48,8 @@ export const orange = {
     this.spawn -= dt;
     if (this.spawn <= 0){
       this.spawn = Math.max(.3, 1.05 - this.sp * .09);
-      this.items.push({x: this.r + Math.random() * (PW - 2 * this.r), y: -this.r, v: 15 * this.sp});
+      const lo = this.cx0 - this.bandHalf + this.r, hi = this.cx0 + this.bandHalf - this.r;
+      this.items.push({x: lo + Math.random() * Math.max(0, hi - lo), y: -this.r, v: 15 * this.sp});
     }
     for (const o of this.items) o.y += o.v * dt;
 
@@ -77,7 +85,7 @@ export const orange = {
     this.stack = 0;
     sfx.pop();
   },
-  pointer(x){ this.x = Math.max(this.halfW, Math.min(PW - this.halfW, x)); },
+  pointer(x){ this.x = Math.max(this.cx0 - this.bandHalf + this.halfW, Math.min(this.cx0 + this.bandHalf - this.halfW, x)); },
   move(x){ this.pointer(x); },
   draw(){
     bg('#16223a', '#1f6b73');
