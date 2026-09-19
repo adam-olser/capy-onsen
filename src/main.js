@@ -1,6 +1,7 @@
 import { gameEl, winEl, boardEl, playEl, over, paintBest, registerGames } from './core/ui.js';
 import { startArena, stopArena, restartArena, arenaResize, current, PW, PH } from './core/arena.js';
 import { sfx } from './audio/sfx.js';
+import { setScene, musicDebug } from './audio/music.js';
 import { paintIcons } from './ui/icons.js';
 import { initSoundPanel } from './ui/soundPanel.js';
 import { startScene, sceneDebug } from './scene/onsen.js';
@@ -29,6 +30,7 @@ function openGame(key){
   playEl.style.display  = p === 'play'  ? 'block' : 'none';
   wordEl.style.display  = p === 'word'  ? 'flex'  : 'none';
   sfx.tap();
+  setScene(key);
   if (p === 'play'){ dom = null; startArena(g); }
   else { dom = g; g.start(); }
 }
@@ -38,6 +40,7 @@ function closeGame(){
   dom = null;
   gameEl.classList.remove('on'); winEl.classList.remove('on');
   sfx.tap();
+  setScene('menu');
 }
 function restart(){
   winEl.classList.remove('on');
@@ -92,3 +95,4 @@ window.__sceneDebug = sceneDebug;
 window.__faceSize = { FACE_LW, FACE_LH };
 window.__currentGame = current;
 window.__PW_PH = () => [PW, PH];
+window.__musicDebug = musicDebug;

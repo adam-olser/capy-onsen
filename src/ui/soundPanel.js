@@ -1,6 +1,6 @@
 import { paintOn, drawSpeaker, drawMixer } from './icons.js';
 import { unlock, soundOn, setSoundOn, musicVol, setMusicVol, sfxVol, setSfxVol } from '../audio/bus.js';
-import { startMusic } from '../audio/music.js';
+import { resumeMusic, pauseMusic } from '../audio/music.js';
 import { sfx } from '../audio/sfx.js';
 
 export function initSoundPanel(){
@@ -22,20 +22,16 @@ export function initSoundPanel(){
   musicSlider.value = String(Math.round(musicVol * 100));
   sfxSlider.value = String(Math.round(sfxVol * 100));
 
-  // any interaction with either button counts as the user gesture Web Audio
-  // needs before it will make a sound at all
-  const wake = () => { unlock(); startMusic(); };
-
   soundBtn.addEventListener('click', () => {
-    wake();
+    unlock();                          // the user gesture Web Audio needs before it'll make any sound
     on = !on;
     setSoundOn(on);
     paintSound();
-    if (on) sfx.purr();
+    if (on){ sfx.purr(); resumeMusic(); } else { pauseMusic(); }
   });
 
   mixerBtn.addEventListener('click', () => {
-    wake();
+    unlock();
     const open = mixer.hasAttribute('hidden');
     if (open) mixer.removeAttribute('hidden'); else mixer.setAttribute('hidden', '');
     mixerBtn.setAttribute('aria-expanded', String(open));
@@ -47,6 +43,6 @@ export function initSoundPanel(){
     mixerBtn.setAttribute('aria-expanded', 'false');
   });
 
-  musicSlider.addEventListener('input', () => { wake(); setMusicVol(musicSlider.value / 100); });
-  sfxSlider.addEventListener('input', () => { wake(); setSfxVol(sfxSlider.value / 100); sfx.tap(); });
+  musicSlider.addEventListener('input', () => { unlock(); setMusicVol(musicSlider.value / 100); });
+  sfxSlider.addEventListener('input', () => { unlock(); setSfxVol(sfxSlider.value / 100); sfx.tap(); });
 }
