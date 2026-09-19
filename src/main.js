@@ -56,6 +56,14 @@ document.getElementById('menu').addEventListener('click', e => {
 document.getElementById('back').addEventListener('click', closeGame);
 document.getElementById('again').addEventListener('click', restart);
 
+const creditsBtn = document.getElementById('creditsBtn');
+const creditsText = document.getElementById('creditsText');
+creditsBtn.addEventListener('click', () => {
+  const show = creditsText.hasAttribute('hidden');
+  if (show) creditsText.removeAttribute('hidden'); else creditsText.setAttribute('hidden', '');
+  creditsBtn.setAttribute('aria-expanded', String(show));
+});
+
 /* Convert a page-space pointer event to arena units using the canvas's own
    current CSS size, not the shared window-derived PIXEL constant -- since
    arenaResize() snaps the canvas to an integer device-pixel box (see
