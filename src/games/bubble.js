@@ -15,6 +15,12 @@ export const bubble = {
     this.cw = Math.min(52, Math.max(18, Math.round(PH * .24)));
     this.u  = Math.max(1, Math.round(this.cw / 22));
     this.cx = PW / 2;
+    // bubbles wander/bounce within this band, not the raw canvas width -- on
+    // a wide desktop window PW dwarfs PH and a bubble that lives long enough
+    // (a slow riser on a tall canvas) can bounce corner to corner, forcing
+    // the player to chase it across the whole monitor. Capping the band by
+    // PH keeps the catch area sized to the bath, not the browser window.
+    this.bandHalf = Math.min(PW / 2, PH * .55);
     this.wl = Math.round(PH * .62);        // the bath fills the lower third
     this.cy = this.wl - this.cw * .3;      // chin sits on the surface
     this.spoutX = Math.round(PW * .2);
@@ -42,7 +48,7 @@ export const bubble = {
       // surface beside the snout, at the waterline, then fan out as they rise
       const side = Math.random() < .5 ? -1 : 1;
       this.b.push({
-        x: Math.max(r, Math.min(PW - r, this.cx + side * (7 + Math.random() * 5) * this.u)),
+        x: Math.max(this.cx - this.bandHalf + r, Math.min(this.cx + this.bandHalf - r, this.cx + side * (7 + Math.random() * 5) * this.u)),
         y: this.cy + this.cw * .3,
         r, vx: (Math.random() - .5) * 26,
         v: 9 + Math.random() * 13 + (30 - this.t) * .45,
@@ -52,8 +58,8 @@ export const bubble = {
     for (const o of this.b){
       o.y -= o.v * dt;
       o.x += o.vx * dt + Math.sin(T * 2 + o.p) * .2;
-      if (o.x < o.r){ o.x = o.r; o.vx = -o.vx; }
-      if (o.x > PW - o.r){ o.x = PW - o.r; o.vx = -o.vx; }
+      if (o.x < this.cx - this.bandHalf + o.r){ o.x = this.cx - this.bandHalf + o.r; o.vx = -o.vx; }
+      if (o.x > this.cx + this.bandHalf - o.r){ o.x = this.cx + this.bandHalf - o.r; o.vx = -o.vx; }
     }
     this.b = this.b.filter(o => o.y + o.r > 0);
 
