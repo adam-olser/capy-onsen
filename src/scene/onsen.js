@@ -13,7 +13,7 @@ const bx = buf.getContext('2d');
 
 let VW = 120, VH = 220, scale = 1, stars = [], steam = [], yuzu = [], fireflies = [];
 
-function resize(){
+export function resize(){
   const w = innerWidth, h = innerHeight;
   // nominal CSS px per logical unit -- capped at 4 (roughly what a 425px-wide
   // phone already gets) so a wider/taller viewport reveals more of the scene
