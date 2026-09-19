@@ -3,14 +3,14 @@ import { ctx, musicBus, unlock } from './bus.js';
 import menuUrl from './tracks/menu-lofi-tokyo.mp3';
 import bubbleUrl from './tracks/bubbles-rainy-days.mp3';
 import wordleUrl from './tracks/wordle-solemn-strings.mp3';
-import orangeUrl from './tracks/orange-funny-positive.mp3';
+import chillUrl from './tracks/chill-crossed-path.mp3';
 import runUrl from './tracks/run-gaming-circuit.mp3';
 
-/* Licensed tracks (see export/AUDIO-CREDITS.md), one per screen -- match and
-   stack don't have a dedicated one yet, so they share Orange Catch's. */
+/* Licensed tracks (see export/AUDIO-CREDITS.md), one per screen -- match,
+   orange and stack don't each have a dedicated one yet, so they share. */
 const TRACKS = {
-  menu: menuUrl, bubble: bubbleUrl, wordle: wordleUrl, orange: orangeUrl, run: runUrl,
-  match: orangeUrl, stack: orangeUrl,
+  menu: menuUrl, bubble: bubbleUrl, wordle: wordleUrl, run: runUrl,
+  orange: chillUrl, match: chillUrl, stack: chillUrl,
 };
 const FADE = 1.2;                       // seconds, crossfade between tracks
 
