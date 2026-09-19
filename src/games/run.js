@@ -95,6 +95,15 @@ export const run = {
   draw(){
     bg('#101a30', '#2b3f56');
     blob(PW * .78 - 4, PH * .14 - 4, 9, 9, C.moon, 2);
+    // a treeline riding the same hill, scrolling at the same rate (the
+    // `+ this.d * .25` term matches the hill's own) so it reads as sitting
+    // on the ridge instead of drifting independently of it
+    const n = 5, spacing = PW / n;
+    for (let i = 0; i < n; i++){
+      const sx = (((i * spacing - this.d * .25) % PW) + PW) % PW;
+      const hh = Math.sin((sx + this.d * .25) / (PW * .22)) * PH * .05;
+      pine(Math.round(sx), Math.round(this.gy - PH * .1 - hh - 2), PH * .1, '#0a1320');
+    }
     for (let x = 0; x < PW; x++){
       const h = Math.sin((x + this.d * .25) / (PW * .22)) * PH * .05;
       px(x, this.gy - PH * .1 - h, 1, PH, C.hill);

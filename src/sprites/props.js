@@ -24,3 +24,13 @@ export function drawYuzu(x, y, r){
   px(x - r + 1, y - r + 1, Math.max(1, r - 1), 1, C.yuzuHi);
   px(x, y - r - 1, 1, 1, C.leaf);
 }
+
+/* a squat citrus tree: round canopy on a short trunk, a couple of yuzu
+   peeking out -- background silhouette for Orange Catch's shoreline */
+export function citrusTree(cx, baseY, s, leafC){
+  const trunk = Math.max(2, Math.round(s * .3));
+  px(cx - 1, baseY - trunk, 2, trunk, '#5a3a24');
+  blob(cx - s / 2, baseY - trunk - s, s, s, leafC, s * .3);
+  drawYuzu(cx - s * .18, baseY - trunk - s * .55, Math.max(1, Math.round(s * .09)));
+  drawYuzu(cx + s * .22, baseY - trunk - s * .72, Math.max(1, Math.round(s * .09)));
+}

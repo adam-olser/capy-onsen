@@ -5,7 +5,7 @@ import { sfx } from '../audio/sfx.js';
 import { caught } from '../core/hit.js';
 import { capyHead } from '../sprites/capy.js';
 import { drawCapyFace } from '../sprites/capyFace.js';
-import { drawYuzu } from '../sprites/props.js';
+import { drawYuzu, citrusTree } from '../sprites/props.js';
 
 /* A flared-rim, tapered-wall U bowl, stepped one unit at a time -- at u=1
    a smooth curve all but disappears, but two explicit steps read clearly. */
@@ -42,6 +42,7 @@ export const orange = {
     this.x = null; this.layout();
     this.items = []; this.fx = []; this.n = 0; this.lives = 3; this.spawn = .5; this.sp = 1;
     this.stack = 0; this.flash = 0;
+    this.mood = null; this.moodT = 0;
   },
   update(dt){
     this.sp += dt * .05;
@@ -58,11 +59,13 @@ export const orange = {
       const bottom = o.y + this.r, prev = bottom - o.v * dt;
       if (caught(prev, bottom, this.top, o.x - this.x, this.halfW)){
         this.n++; this.stack++; this.flash = .18; sfx.match();
+        this.mood = 'happy'; this.moodT = .4;
         if (this.stack >= STACK_MAX) this.tumble();
         return false;
       }
       if (o.y > PH + 5){
         this.lives--; sfx.miss();
+        this.mood = 'sad'; this.moodT = .4;
         if (this.lives <= 0) finish('CAUGHT ' + this.n + ' YUZU', this.n, 'orange', false);
         return false;
       }
@@ -72,6 +75,7 @@ export const orange = {
     for (const f of this.fx){ f.vy += 160 * dt; f.x += f.vx * dt; f.y += f.vy * dt; }
     this.fx = this.fx.filter(f => f.y < PH + 8);
     this.flash = Math.max(0, this.flash - dt);
+    this.moodT = Math.max(0, this.moodT - dt);
   },
   tumble(){
     // a full head-load rolls off into the water
@@ -89,12 +93,23 @@ export const orange = {
   move(x){ this.pointer(x); },
   draw(){
     bg('#16223a', '#1f6b73');
+    const horizon = PH * .28;
+    for (const [fx, fs] of [[.06, .13], [.15, .09], [.85, .1], [.95, .14]])
+      citrusTree(Math.round(PW * fx), Math.round(horizon), Math.max(6, PH * fs), '#234d21');
     for (let i = 0; i < 4; i++){
       const ry = PH - 4 - i * 5;
       TARGET.globalAlpha = .1; px(PW * .05, ry, PW * .9, 1, '#bfeef0'); TARGET.globalAlpha = 1;
     }
-    // capybara sits a layer below every orange
-    drawCapyFace(this.x, this.cy, this.cw, false);
+    // capybara sits a layer below every orange -- glances toward the closest
+    // falling yuzu when not busy flashing a happy/sad reaction to one
+    let faceOpts = {};
+    if (this.moodT > 0) faceOpts = {mood: this.mood};
+    else {
+      let nearest = null;
+      for (const o of this.items) if (!nearest || o.y > nearest.y) nearest = o;
+      if (nearest && Math.abs(nearest.x - this.x) > this.r) faceOpts = {look: nearest.x < this.x ? -1 : 1};
+    }
+    drawCapyFace(this.x, this.cy, this.cw, false, faceOpts);
 
     // tray: an honest indicator of the actual catch width, not a fudged one --
     // its edges sit exactly at this.x +/- this.halfW, the real hitbox. Its rim

@@ -1,4 +1,4 @@
-import { PW, PH, bg } from '../core/arena.js';
+import { PW, PH, bg, glow } from '../core/arena.js';
 import { px, blob, roundRect, TARGET } from '../core/paint.js';
 import { C } from '../core/palette.js';
 import { finish, over } from '../core/ui.js';
@@ -113,6 +113,11 @@ export const stack = {
     roundRect(x + 1, y + 1, Math.max(1, w - 2), Math.max(1, this.lh - 2), 2, tone);
     if (w > 6) px(x + 2, y + 1, Math.max(1, w - 4), 1, '#e8a34f');           // highlight
     if (w > 10 && this.lh > 4) px(x + 3, y + this.lh - 2, w - 6, 1, '#00000022');
+    if (w > 14 && this.lh > 5){                                             // wood grain
+      const gy = y + Math.floor(this.lh * .55);
+      px(x + 3, gy, Math.max(1, Math.round(w * .3)), 1, 'rgba(0,0,0,.15)');
+      px(x + w * .55, gy, Math.max(1, Math.round(w * .25)), 1, 'rgba(0,0,0,.15)');
+    }
   },
 
   draw(){
@@ -131,6 +136,9 @@ export const stack = {
     for (const [fx, fh] of [[.06, .06], [.16, .045], [.86, .05], [.95, .065]])
       pine(Math.round(PW * fx), Math.round(horizon), PH * fh, '#0a1320');
 
+    // a warm glow low in frame -- the deck rises out of the onsen itself
+    glow(PW / 2, PH * 1.08, PW * .6, 'rgba(233,163,79,.12)');
+
     for (let i = 0; i < this.stack.length; i++){
       const s = this.stack[i];
       this.plank(s.x, this.rowY(i), s.w, i);
@@ -144,7 +152,7 @@ export const stack = {
     // the sliding plank, with the capybara riding it
     const m = this.moving, my = this.rowY(this.stack.length);
     this.plank(m.x, my, m.w, this.stack.length);
-    drawCapyRun(m.x + m.w / 2, my + 1, this.scale, 0);
+    drawCapyRun(m.x + m.w / 2, my + 1 + Math.sin(T * 3) * .5, this.scale, 0);
 
     if (this.flash > 0){
       TARGET.globalAlpha = Math.min(1, this.flash * 2);

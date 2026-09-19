@@ -3,10 +3,11 @@ import { sfx } from '../audio/sfx.js';
 import { paintOn, CARD_DRAW, drawCardBack } from '../ui/icons.js';
 
 /* ================= 1. memory match (DOM) ================= */
-const SYMBOLS = ['yuzu', 'bubble', 'moon', 'leaf', 'onsen', 'paw'];
+const SYMBOLS = ['yuzu', 'bubble', 'moon', 'leaf', 'onsen', 'paw', 'star', 'lantern'];
 const SYMBOL_NAMES = {
   yuzu: 'yuzu', bubble: 'bubble', moon: 'moon',
   leaf: 'leaf', onsen: 'hot spring', paw: 'paw print',
+  star: 'star', lantern: 'lantern',
 };
 export const match = {
   key: 'match', title: 'MEMORY MATCH', canvas: false,

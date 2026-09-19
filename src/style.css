@@ -175,13 +175,17 @@ body{
   image-rendering:pixelated;touch-action:none;
 }
 #board{
-  display:grid;grid-template-columns:repeat(3,1fr);
+  display:grid;grid-template-columns:repeat(4,1fr);
   gap:var(--gap);
-  /* 4 rows of 4:3 cards stand ~1.78x as tall as the board is wide, so cap the
-     width by the height too and the grid never overflows a short window */
-  width:min(400px, 100%, calc((100dvh - 100px) * .56));
+  /* 4 rows of 4:3 cards stand ~1.33x as tall as the board is wide (4 cols
+     now, not 3), so cap the width by the height too and the grid never
+     overflows a short window */
+  width:min(440px, 100%, calc((100dvh - 100px) * .75));
   margin:auto;
   align-content:center;
+  padding:14px;
+  border-radius:18px;
+  background:radial-gradient(ellipse at 50% 28%, rgba(201,111,74,.16), rgba(15,58,66,.09) 65%, transparent 100%);
 }
 .tile{perspective:600px;background:none;border:0;padding:0;cursor:pointer;aspect-ratio:3/4}
 .tile .inner{

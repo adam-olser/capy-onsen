@@ -112,51 +112,135 @@ export function paintIcons(){
 /* ---- memory match card faces, same pixel language as the games ---- */
 export const CARD_DRAW = {
   yuzu(){
-    drawYuzu(16, 20, 11);
-    px(15, 7, 2, 4, '#6b4a33');
-    blob(17, 3, 11, 7, '#4f8a49', 2);
-    px(20, 6, 5, 1, '#79b86e');
+    drawYuzu(16, 21, 12);
+    px(0, 11, 12, 1, '#c98046'); px(0, 12, 10, 1, '#c98046');               // dimpled rind texture
+    px(20, 15, 8, 1, '#c98046'); px(22, 25, 7, 1, '#c98046');
+    px(15, 6, 2, 5, '#6b4a33');
+    blob(16, 2, 13, 8, '#4f8a49', 2);
+    blob(18, 3, 6, 4, '#79b86e', 2);                                        // leaf sheen
   },
   bubble(){
-    ring(14, 18, 11, '#3f8f98');
-    px(9, 11, 3, 1, '#8fd3d8'); px(8, 12, 2, 1, '#8fd3d8'); px(7, 13, 2, 1, '#8fd3d8');
-    ring(25, 8, 5, '#3f8f98');
-    px(23, 5, 2, 1, '#8fd3d8'); px(22, 6, 2, 1, '#8fd3d8');
+    ring(13, 19, 12, '#3f8f98'); ring(13, 19, 11, '#5fb0b8');
+    px(7, 11, 4, 1, '#c8f0f2'); px(6, 12, 2, 1, '#c8f0f2'); px(5, 13, 2, 1, '#c8f0f2');
+    ring(26, 8, 5, '#3f8f98'); ring(26, 8, 4, '#5fb0b8');
+    px(23, 5, 2, 1, '#c8f0f2'); px(22, 6, 2, 1, '#c8f0f2');
+    ring(4, 27, 3, '#3f8f98');
   },
   moon(){
-    blob(3, 5, 22, 22, '#e8c46a', 6);
+    blob(2, 4, 25, 25, '#e8c46a', 7);
     TARGET.globalCompositeOperation = 'destination-out';   // safe: the icon canvas starts empty
-    blob(12, 1, 22, 22, '#000', 6);
+    blob(12, -1, 25, 25, '#000', 7);
     TARGET.globalCompositeOperation = 'source-over';
-    px(21, 11, 2, 2, '#e8c46a');
-    px(26, 19, 1, 1, '#e8c46a');
-    px(24, 26, 1, 1, '#e8c46a');
+    // craters, in the visible crescent sliver (lower-left of the circle)
+    px(8, 21, 2, 2, '#d1a24a'); px(5, 15, 2, 2, '#d1a24a'); px(10, 25, 1, 1, '#d1a24a');
+    px(19, 9, 3, 3, '#e8c46a');
+    px(25, 19, 2, 2, '#e8c46a');
+    px(22, 27, 2, 2, '#e8c46a');
+    px(6, 6, 2, 2, '#fff4de'); px(4, 4, 1, 1, '#fff4de');                   // twinkle beside the crescent
+    px(29, 15, 1, 1, '#fff4de');
   },
   leaf(){
-    // per-row spans: a pointed oval tilted tip-up-right, base down-left
-    const spans = [[4,20,25],[5,18,26],[6,16,27],[7,14,27],[8,13,27],[9,11,26],[10,10,25],
-                   [11,9,24],[12,8,22],[13,7,20],[14,6,18],[15,6,16],[16,6,14],[17,7,12],[18,8,11]];
-    for (const [y, a, b] of spans) px(a, y, b - a + 1, 1, '#4f8a49');
-    for (let i = 0; i < 13; i++) px(9 + i, 16 - i, 1, 1, '#79b86e');      // midrib
-    px(6, 19, 3, 2, '#3b6b38'); px(5, 21, 3, 2, '#3b6b38'); px(4, 23, 3, 5, '#3b6b38');
+    // a pointed oval (tip up-right, base down-left), rasterised as a
+    // tapered capsule along its spine so the width tapers smoothly
+    // instead of relying on hand-tuned per-row spans
+    const p0 = [5, 29], p1 = [28, 3];
+    const dx = p1[0] - p0[0], dy = p1[1] - p0[1], len2 = dx * dx + dy * dy;
+    const maxW = 7.2;
+    for (let y = 0; y < 32; y++){
+      for (let x = 0; x < 32; x++){
+        const t = Math.max(0, Math.min(1, ((x - p0[0]) * dx + (y - p0[1]) * dy) / len2));
+        const lx = p0[0] + t * dx, ly = p0[1] + t * dy;
+        const w = maxW * Math.sin(Math.PI * t);
+        const d = Math.hypot(x - lx, y - ly);
+        if (d <= w) px(x, y, 1, 1, d > w - 1.6 ? '#3b6b38' : '#4f8a49');
+      }
+    }
+    for (let i = 0; i <= 24; i++){                                        // midrib
+      const t = i / 24;
+      px(Math.round(p0[0] + t * dx), Math.round(p0[1] + t * dy), 1, 1, '#79b86e');
+    }
+    px(2, 29, 4, 2, '#3b6b38'); px(0, 30, 4, 2, '#3b6b38');                // stem
   },
   onsen(){
-    for (let i = 0; i < 3; i++){
-      const x = 7 + i * 8;
-      px(x,     3,  2, 3, '#5f9aa1'); px(x + 1, 6,  2, 3, '#5f9aa1');
-      px(x,     9,  2, 3, '#5f9aa1'); px(x + 1, 12, 2, 3, '#5f9aa1');
+    // a wooden-bottomed tub: elliptical pool, a solid wood base/feet under
+    // it (not just a thin rim sliver), and steam in a colour that actually
+    // shows up against the card's cream back
+    const wood = '#5a3a24', woodDark = '#3a2418', water = '#2f7f88', sheen = '#6fd0d8', steam = '#7fb8bf';
+    px(5, 26, 22, 4, woodDark);                               // wooden base
+    px(3, 29, 5, 2, woodDark); px(24, 29, 5, 2, woodDark);    // feet
+    blob(2, 13, 28, 16, wood, 8);                              // tub rim (elliptical)
+    blob(4, 15, 24, 11, water, 6);                             // water
+    px(7, 17, 16, 1, sheen);                                   // water sheen
+    const curls = [8, 16, 24];
+    for (let c = 0; c < curls.length; c++){
+      for (let i = 0; i < 5; i++){
+        const off = Math.round(Math.sin(i * 1.1 + c) * 2.2);
+        px(curls[c] + off, 10 - i * 2.2, 2, 2, steam);
+      }
     }
-    blob(3, 19, 26, 9, '#c96f4a', 4);
-    px(7, 21, 18, 2, '#e08a63');
-    px(5, 26, 22, 2, '#a4573a');
   },
   paw(){
-    const c = '#6b4a33';
-    blob(2, 10, 7, 9, c, 2);
-    blob(10, 4, 7, 10, c, 2);
-    blob(19, 4, 7, 10, c, 2);
-    blob(25, 11, 6, 9, c, 2);
-    blob(7, 18, 18, 12, c, 5);
+    const c = '#6b4a33', hi = '#8a6242';
+    // true ellipses (blob() only gives an axis-aligned rounded rect): the
+    // classic symmetric paw-print glyph -- four even toes (outer two a
+    // touch smaller) over one smooth rounded pad, no notch
+    const ellipse = (cx, cy, rx, ry, color) => {
+      const x0 = Math.floor(cx - rx), x1 = Math.ceil(cx + rx);
+      const y0 = Math.floor(cy - ry), y1 = Math.ceil(cy + ry);
+      for (let y = y0; y <= y1; y++)
+        for (let x = x0; x <= x1; x++){
+          const nx = (x + .5 - cx) / rx, ny = (y + .5 - cy) / ry;
+          if (nx * nx + ny * ny <= 1) px(x, y, 1, 1, color);
+        }
+    };
+    const toe = (cx, cy, rx, ry) => { ellipse(cx, cy, rx, ry, c); ellipse(cx, cy - ry * .15, rx * .6, ry * .62, hi); };
+    toe(7, 12, 3.4, 5);   toe(32 - 7, 12, 3.4, 5);               // outer toes
+    toe(13, 6.5, 3.9, 5.8); toe(32 - 13, 6.5, 3.9, 5.8);         // inner toes
+    ellipse(16, 22.5, 10, 7.5, c);                                // the pad
+    ellipse(16, 20.5, 6.5, 5, hi);
+  },
+  star(){
+    // a proper 5-point star, rasterised from its actual polygon so the
+    // silhouette is correct instead of hand-drawn rows
+    const cx = 16, cy = 16.5, R = 15, r = 5.9;
+    const pts = [];
+    for (let i = 0; i < 10; i++){
+      const ang = -Math.PI / 2 + i * Math.PI / 5;
+      const rad = i % 2 === 0 ? R : r;
+      pts.push([cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad]);
+    }
+    const inside = (x, y) => {
+      let c = false;
+      for (let i = 0, j = pts.length - 1; i < pts.length; j = i++){
+        const [xi, yi] = pts[i], [xj, yj] = pts[j];
+        if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) c = !c;
+      }
+      return c;
+    };
+    for (let y = 0; y < 32; y++) for (let x = 0; x < 32; x++) if (inside(x + .5, y + .5)) px(x, y, 1, 1, '#e8c46a');
+    for (let y = 0; y < 32; y++) for (let x = 0; x < 16; x++) if (inside(x + .5, y + .5)) px(x, y, 1, 1, '#f2d488');
+    px(14, 13, 2, 2, '#fff4de');                                            // a small glint, not a block
+    px(3, 3, 2, 2, '#e8c46a'); px(27, 4, 2, 2, '#e8c46a'); px(4, 26, 2, 2, '#e8c46a');
+  },
+  lantern(){
+    // a Japanese chōchin: an elongated oval paper body (bulging in the
+    // upper-middle, tapering hard into both caps -- a round blob() reads as
+    // a ball, not a lantern), bamboo ribbing, a medallion, and lacquered caps
+    const paper = '#e8613f', dark = '#2a1810', hi = '#ff8a5c', cream = '#fff4de';
+    px(15, 0, 2, 3, dark);                                    // hanging cord
+    blob(12, 2, 8, 4, dark, 2);                                // top cap
+    const top = 6, bot = 28, maxW = 12;
+    const bodyW = y => Math.round(maxW * Math.pow(Math.sin(Math.PI * (y - top) / (bot - top)), .55));
+    for (let y = top; y <= bot; y++){
+      const w = bodyW(y);
+      if (w > 0) px(16 - w, y, w * 2, 1, paper);
+    }
+    px(9, 9, 2, 15, hi);                                       // sheen down the left side
+    for (const ry of [12, 17, 22]){ const w = bodyW(ry); px(16 - w, ry, w * 2, 1, dark); }  // ribbing
+    blob(11, 13, 10, 9, cream, 5);                              // centre medallion
+    blob(13, 16, 6, 4, paper, 2);                               // medallion mark
+    blob(12, 24, 8, 5, dark, 2);                                // bottom cap
+    px(15, 29, 2, 3, dark);                                     // tassel stub
   },
 };
 export function drawCardBack(){
