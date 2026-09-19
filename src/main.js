@@ -57,12 +57,19 @@ document.getElementById('back').addEventListener('click', closeGame);
 document.getElementById('again').addEventListener('click', restart);
 
 const creditsBtn = document.getElementById('creditsBtn');
-const creditsText = document.getElementById('creditsText');
-creditsBtn.addEventListener('click', () => {
-  const show = creditsText.hasAttribute('hidden');
-  if (show) creditsText.removeAttribute('hidden'); else creditsText.setAttribute('hidden', '');
-  creditsBtn.setAttribute('aria-expanded', String(show));
-});
+const creditsModal = document.getElementById('creditsModal');
+const creditsClose = document.getElementById('creditsClose');
+function openCredits(){
+  creditsModal.removeAttribute('hidden');
+  creditsBtn.setAttribute('aria-expanded', 'true');
+}
+function closeCredits(){
+  creditsModal.setAttribute('hidden', '');
+  creditsBtn.setAttribute('aria-expanded', 'false');
+}
+creditsBtn.addEventListener('click', openCredits);
+creditsClose.addEventListener('click', closeCredits);
+creditsModal.addEventListener('click', e => { if (e.target === creditsModal) closeCredits(); });
 
 /* Convert a page-space pointer event to arena units using the canvas's own
    current CSS size, not the shared window-derived PIXEL constant -- since
@@ -85,6 +92,7 @@ playEl.addEventListener('pointermove', e => {
   g.move(...toArena(e));
 });
 addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !creditsModal.hasAttribute('hidden')) return closeCredits();
   if (!gameEl.classList.contains('on')) return;
   if (e.key === 'Escape') return closeGame();
   const g = active();

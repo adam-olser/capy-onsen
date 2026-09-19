@@ -6,23 +6,29 @@ import { sfx } from '../audio/sfx.js';
 import { hitsObstacle } from '../core/hit.js';
 import { drawCapyRun, RUN_FRAME_W, RUN_FRAME_H, RUN_AIR_FRAME } from '../sprites/capy.js';
 import { hitBox } from '../sprites/run-footprint.js';
+import { pine } from '../sprites/props.js';
 
 /* ================= 4. capy run ================= */
 export const run = {
   key: 'run', title: 'CAPY RUN', canvas: true,
   layout(){
-    // integer scale only, so the artist's pixels stay square
-    this.scale = Math.max(1, Math.min(3, Math.round(PH * .15 / RUN_FRAME_H)));
+    // integer scale only, so the artist's pixels stay square. Obstacles
+    // spawn at PW and close in at a speed tied to cw, so the runway ahead
+    // (in body-widths) is roughly PW / cw -- if cw only followed PH, a
+    // narrow mobile-portrait screen (small PW, ordinary PH) would keep the
+    // sprite full-size while starving the runway. Cap the scale by width
+    // too, so a narrow screen zooms the sprite out instead, buying back
+    // runway rather than cropping the runner off the left edge for it.
+    const scaleH = Math.round(PH * .15 / RUN_FRAME_H);
+    const scaleW = Math.max(1, Math.floor(PW * .12 / RUN_FRAME_W));
+    this.scale = Math.max(1, Math.min(3, scaleH, scaleW));
     this.cw = RUN_FRAME_W * this.scale;
     this.u  = this.scale;
-    // obstacles spawn at the right edge (PW) and close in at a speed tied to
-    // cw (from PH), but the runway between spawn and player is PW * .76 --
-    // on a narrow mobile-portrait screen PW is small while cw/speed isn't,
-    // so the runway shrinks and obstacles arrive with much less warning
-    // than on a wide desktop window. Guarantee a minimum runway in body-
-    // widths by pulling the player leftward; this only ever pulls cx down
-    // from its usual 24%, never past it, so desktop is unaffected.
-    this.cx = Math.round(Math.min(PW * .24, Math.max(0, PW - this.cw * 7)));
+    // the sprite is drawn centred on cx (drawCapyRun), so cx must stay at
+    // least half a body-width from the left edge or the body gets clipped;
+    // within that floor, pull it left (from its usual 24%) for more runway.
+    const minCx = Math.ceil(this.cw / 2) + 2;
+    this.cx = Math.round(Math.min(PW * .24, Math.max(minCx, PW - this.cw * 7)));
     this.gy = Math.round(PH * .78);
     // jump clears ~0.9 body-heights in ~0.78s, whatever the screen size
     this.jv = 4.62 * this.cw;

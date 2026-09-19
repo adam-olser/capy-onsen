@@ -43,7 +43,13 @@ export const stack = {
   },
   spawn(dir){
     const top = this.stack[this.stack.length - 1];
-    const sp = 26 + this.n * 1.6;                          // px/s, ramps with height
+    // px/s, ramps with height -- scaled by PW/125 (125 being a typical
+    // mobile PW, where this was originally tuned) so the plank takes about
+    // the same time to sweep the canvas on any screen. Left as a flat
+    // constant, a wide desktop window (much bigger PW, same px/s) made
+    // every pass crawl, since the plank had much further to travel at the
+    // same speed.
+    const sp = (26 + this.n * 1.6) * (PW / 125);
     this.moving = {
       w: top.w,
       x: dir > 0 ? -top.w * .1 : PW - top.w * .9,

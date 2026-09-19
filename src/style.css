@@ -89,10 +89,32 @@ body{
   text-decoration:underline;text-underline-offset:2px;
 }
 .credit-link:hover,.credit-link:focus-visible{opacity:.6;outline:none}
-.credit{text-align:center;font-size:6px;letter-spacing:.03em;margin-top:6px;color:var(--cream);opacity:.5}
-.credit[hidden]{display:none}
-.credit a{color:var(--yuzu);text-decoration:none}
-.credit a:hover{text-decoration:underline}
+
+.modal{
+  position:fixed;inset:0;display:none;place-items:center;
+  background:rgba(10,22,30,.72);z-index:50;padding:20px;
+}
+.modal:not([hidden]){display:grid}
+.modal-box{
+  position:relative;max-width:300px;width:100%;
+  background:var(--cream);color:var(--ink);border:2px solid var(--terracotta);
+  border-radius:14px;padding:22px 18px 18px;text-align:center;
+}
+.modal-box h3{font-size:12px;letter-spacing:.08em;margin-bottom:12px;color:var(--teal-deep)}
+.credit-list{list-style:none;font-size:10px;line-height:1.8;margin:0 0 16px}
+.credit-list a{color:var(--terracotta);text-decoration:none}
+.credit-list a:hover{text-decoration:underline}
+.modal-close{
+  position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:8px;
+  border:0;background:none;color:var(--ink);font-size:18px;line-height:1;cursor:pointer;
+}
+.modal-close:hover,.modal-close:focus-visible{background:rgba(201,111,74,.18);outline:none}
+.feedback-link{
+  display:inline-block;font-size:10px;font-weight:700;letter-spacing:.04em;
+  color:var(--cream);background:var(--terracotta);padding:9px 16px;border-radius:9px;
+  text-decoration:none;
+}
+.feedback-link:hover,.feedback-link:focus-visible{background:#b45f3d;outline:none}
 
 /* ---------- corner controls ---------- */
 .corner{
