@@ -18,7 +18,13 @@ export const stack = {
   layout(){
     this.lh    = Math.max(5, Math.round(PH * .045));       // plank thickness
     this.baseY = Math.round(PH * .94);
-    this.baseW = Math.round(PW * .42);
+    // width as a flat fraction of PW alone made towers balloon on a wide
+    // desktop window (PW large, PH comparatively short) while looking
+    // right on mobile portrait (PW already the smaller axis there) --
+    // basing it on the smaller of PW/PH keeps the tower's proportions
+    // (width vs. plank thickness, which comes from PH) consistent
+    // regardless of aspect ratio.
+    this.baseW = Math.round(Math.min(PW, PH) * .42);
     this.scale = Math.max(1, Math.min(3, Math.round(this.lh * 2.2 / RUN_FRAME_H)));
     this.visible = Math.max(4, Math.floor(PH * .62 / this.lh));
   },
