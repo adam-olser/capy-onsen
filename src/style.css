@@ -115,6 +115,8 @@ body{
   border-radius:14px;padding:22px 18px 18px;text-align:center;
 }
 .modal-box h3{font-size:12px;letter-spacing:.08em;margin-bottom:12px;color:var(--teal-deep)}
+.modal-text{font-size:10px;line-height:1.8}
+.modal-text strong{color:var(--terracotta)}
 .credit-list{list-style:none;font-size:10px;line-height:1.8;margin:0 0 16px}
 .credit-list a{color:var(--terracotta);text-decoration:none}
 .credit-list a:hover{text-decoration:underline}

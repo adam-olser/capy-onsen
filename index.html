@@ -29,7 +29,7 @@
   <button class="icon-btn" id="mixerBtn" aria-label="Sound settings" aria-expanded="false">
     <canvas width="32" height="32" aria-hidden="true"></canvas>
   </button>
-  <button class="icon-btn" id="fullscreenBtn" aria-label="Toggle fullscreen" aria-pressed="false" hidden>
+  <button class="icon-btn" id="fullscreenBtn" aria-label="Toggle fullscreen" aria-pressed="false">
     <canvas width="32" height="32" aria-hidden="true"></canvas>
   </button>
   <div id="mixer" class="popover" hidden>
@@ -84,6 +84,17 @@
         </li>
       </ul>
       <a class="feedback-link" href="https://github.com/adam-olser/capy-onsen/issues" target="_blank" rel="noopener">Send feedback on GitHub →</a>
+    </div>
+  </div>
+  <div class="modal" id="fsHelpModal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="fsHelpTitle">
+      <button class="modal-close" id="fsHelpClose" aria-label="Close">&times;</button>
+      <h3 id="fsHelpTitle">Fullscreen</h3>
+      <p class="modal-text">
+        Your browser won't let a website go fullscreen here.
+        On iPhone/iPad: tap <strong>Share</strong> → <strong>Add to Home Screen</strong>,
+        then open Capy Onsen from that icon for a fullscreen, chrome-free view.
+      </p>
     </div>
   </div>
 </div>

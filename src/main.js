@@ -74,31 +74,37 @@ creditsBtn.addEventListener('click', openCredits);
 creditsClose.addEventListener('click', closeCredits);
 creditsModal.addEventListener('click', e => { if (e.target === creditsModal) closeCredits(); });
 
-/* Fullscreen toggle -- hidden entirely where it's not actually usable,
-   rather than showing a button that would just silently do nothing.
-   iOS Safari AND iOS Chrome (same WebKit engine underneath, so same
-   limitation) both define document.documentElement.requestFullscreen as a
-   function, but it always rejects there -- WebKit has never implemented
-   the Fullscreen API for anything but a <video> element. fullscreenEnabled
-   is the actual capability flag (also correctly false when a host page
-   embeds this in an iframe without fullscreen permission), so check that
-   instead of just whether the method exists. */
+/* Fullscreen toggle. iOS Safari AND iOS Chrome (same WebKit engine
+   underneath, so same limitation) never implemented the Fullscreen API for
+   anything but a <video> element -- there's no JS call that makes a
+   regular browser tab go fullscreen there, full stop. The only thing that
+   actually works on iOS is "Add to Home Screen" (see the apple-mobile-
+   web-app-capable meta tag), which launches chrome-less from that icon --
+   but only from that icon, not from reopening the same Safari/Chrome tab.
+   Rather than hiding the button (which just reads as "nothing happened"
+   when someone taps where a control used to be) or silently swallowing a
+   rejected promise (same problem), always show it and fall back to a
+   modal with that actual instruction whenever fullscreen isn't usable. */
 const fsBtn = document.getElementById('fullscreenBtn');
-if (document.fullscreenEnabled && document.documentElement.requestFullscreen){
-  fsBtn.removeAttribute('hidden');
-  const fsIcon = fsBtn.querySelector('canvas');
-  const paintFs = () => {
-    const active = !!document.fullscreenElement;
-    paintOn(fsIcon, () => drawFullscreen(active));
-    fsBtn.setAttribute('aria-pressed', String(active));
-  };
-  paintFs();
-  fsBtn.addEventListener('click', () => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else document.documentElement.requestFullscreen().catch(() => {});
-  });
-  document.addEventListener('fullscreenchange', paintFs);
-}
+const fsHelpModal = document.getElementById('fsHelpModal');
+document.getElementById('fsHelpClose').addEventListener('click', () => fsHelpModal.setAttribute('hidden', ''));
+fsHelpModal.addEventListener('click', e => { if (e.target === fsHelpModal) fsHelpModal.setAttribute('hidden', ''); });
+const fsIcon = fsBtn.querySelector('canvas');
+const paintFs = () => {
+  const active = !!document.fullscreenElement;
+  paintOn(fsIcon, () => drawFullscreen(active));
+  fsBtn.setAttribute('aria-pressed', String(active));
+};
+paintFs();
+fsBtn.addEventListener('click', () => {
+  if (document.fullscreenElement) return document.exitFullscreen();
+  if (!document.fullscreenEnabled || !document.documentElement.requestFullscreen){
+    fsHelpModal.removeAttribute('hidden');
+    return;
+  }
+  document.documentElement.requestFullscreen().catch(() => fsHelpModal.removeAttribute('hidden'));
+});
+document.addEventListener('fullscreenchange', paintFs);
 
 /* Convert a page-space pointer event to arena units using the canvas's own
    current CSS size, not the shared window-derived PIXEL constant -- since
@@ -122,6 +128,7 @@ playEl.addEventListener('pointermove', e => {
 });
 addEventListener('keydown', e => {
   if (e.key === 'Escape' && !creditsModal.hasAttribute('hidden')) return closeCredits();
+  if (e.key === 'Escape' && !fsHelpModal.hasAttribute('hidden')) return fsHelpModal.setAttribute('hidden', '');
   if (!gameEl.classList.contains('on')) return;
   if (e.key === 'Escape') return closeGame();
   const g = active();
