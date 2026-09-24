@@ -12,7 +12,7 @@ export const DPR = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
 /* Cross-cutting mutable state. Exported `let` bindings are live for importers;
    only the owning module writes them, through these setters. */
 export let PIXEL = 4;
-export function setPixel(v){ PIXEL = v; }
+export function setPixel(v: number): void { PIXEL = v; }
 
 export let T = 0;                 // scene clock, seconds
-export function setT(v){ T = v; }
+export function setT(v: number): void { T = v; }

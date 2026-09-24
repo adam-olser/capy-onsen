@@ -6,6 +6,8 @@ import { setTarget, TARGET } from '../core/paint.js';
 import { DPR } from '../core/env.js';
 import { drawCapyFace } from '../sprites/capyFace.js';
 import { drawYuzu } from '../sprites/props.js';
+import type { Game, KeyState, Mark } from '../core/types.js';
+import type { FaceOpts } from '../sprites/capyFace.js';
 
 /* Drawn at a fixed logical size (matches the cx0/w/cy constants in tick()),
    then blitted up to the real, DPR-sized display canvas -- same buffer/blit
@@ -14,7 +16,7 @@ import { drawYuzu } from '../sprites/props.js';
 export const FACE_LW = 64, FACE_LH = 44;
 const faceBuf = document.createElement('canvas');
 faceBuf.width = FACE_LW; faceBuf.height = FACE_LH;
-const faceBufCtx = faceBuf.getContext('2d');
+const faceBufCtx = faceBuf.getContext('2d')!;
 faceBufCtx.imageSmoothingEnabled = false;
 
 /* ================= 6. wordlebara =================
@@ -22,9 +24,12 @@ faceBufCtx.imageSmoothingEnabled = false;
    all-grey row, and gets a yuzu on its head if you finish it. */
 const ROWS = 6, COLS = 5;
 
+type IdleName = 'none' | 'blink' | 'look' | 'ear' | 'sniff' | 'doze' | 'turn';
+type Mood = 'idle' | 'happy' | 'sad' | 'win' | 'lose';
+
 /* Idle repertoire. One is picked at random between reactions so the capybara
    is never simply static; each is a small parameter change, not a new sprite. */
-const IDLES = [
+const IDLES: { name: IdleName; dur: number }[] = [
   { name: 'blink', dur: .18 },
   { name: 'look',  dur: 1.2 },
   { name: 'ear',   dur: .55 },
@@ -36,15 +41,43 @@ const IDLES = [
 const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', '⏎ zxcvbnm ⌫'];
 const DAY0 = Date.UTC(2026, 0, 1);
 
-export const wordle = {
+interface Idle { name: IdleName; until: number; dir: number; dur?: number; }
+
+interface WordleGame extends Game {
+  grid: HTMLElement; keysEl: HTMLElement; hintBtn: HTMLButtonElement;
+  face: HTMLCanvasElement; fctx: CanvasRenderingContext2D;
+  seenDaily?: boolean; answer: string;
+  row: number; cur: string; done: boolean;
+  keyState: KeyState; mood: Mood; moodUntil: number;
+  idle: Idle; nextIdle: number; hop: number; shake: number; hintUsed: boolean;
+  tiles: HTMLElement[][]; keyEls: Record<string, HTMLButtonElement>;
+  onHint?: () => void; onKeyDown?: (e: KeyboardEvent) => void; raf: number;
+  build(): void;
+  type(ch: string): void;
+  back(): void;
+  shakeRow(): void;
+  submit(): void;
+  useHint(): void;
+  setMood(m: Mood, secs: number): void;
+  react(kind: 'hop' | 'shake'): void;
+  tick(now: number): void;
+}
+
+export const wordle: WordleGame = {
   key: 'wordle', title: 'WORDLEBARA', pane: 'word',
+  grid: null as unknown as HTMLElement, keysEl: null as unknown as HTMLElement,
+  hintBtn: null as unknown as HTMLButtonElement, face: null as unknown as HTMLCanvasElement,
+  fctx: null as unknown as CanvasRenderingContext2D,
+  answer: '', row: 0, cur: '', done: false, keyState: {}, mood: 'idle', moodUntil: 0,
+  idle: { name: 'none', until: 0, dir: 1 }, nextIdle: 0, hop: 0, shake: 0, hintUsed: false,
+  tiles: [], keyEls: {}, raf: 0,
 
   start(){
-    this.grid = document.getElementById('wgrid');
-    this.keysEl = document.getElementById('wkeys');
-    this.hintBtn = document.getElementById('hintBtn');
-    this.face = document.getElementById('capyface');
-    this.fctx = this.face.getContext('2d');
+    this.grid = document.getElementById('wgrid')!;
+    this.keysEl = document.getElementById('wkeys')!;
+    this.hintBtn = document.getElementById('hintBtn') as HTMLButtonElement;
+    this.face = document.getElementById('capyface') as HTMLCanvasElement;
+    this.fctx = this.face.getContext('2d')!;
 
     // the daily word first; replays are random so it stays playable
     if (this.seenDaily){
@@ -129,7 +162,7 @@ export const wordle = {
     if (this.cur.length >= COLS) return;
     this.cur += ch;
     const t = this.tiles[this.row][this.cur.length - 1];
-    t.firstChild.insertAdjacentText('beforebegin', ch.toUpperCase());
+    (t.firstChild as Element).insertAdjacentText('beforebegin', ch.toUpperCase());
     t.classList.add('filled');
     this.setMood('happy', .18);          // a small ear-perk per keypress
     sfx.tap();
@@ -144,7 +177,7 @@ export const wordle = {
   },
 
   shakeRow(){
-    const row = this.grid.children[this.row];
+    const row = this.grid.children[this.row] as HTMLElement;
     row.classList.remove('shake');
     void row.offsetWidth;                // restart the animation
     row.classList.add('shake');
@@ -228,7 +261,7 @@ export const wordle = {
       }
     }
 
-    const a = { mood: this.mood };
+    const a: FaceOpts = { mood: this.mood as FaceOpts['mood'] };
     const el = (this.idle.until - now) / 1000;
     let blink = now % 4600 < 130;                       // the baseline blink
     if (this.mood === 'idle'){
@@ -238,7 +271,7 @@ export const wordle = {
       if (this.idle.name === 'sniff') a.sniff = Math.sin(now / 70) > 0 ? 1 : 0;
       if (this.idle.name === 'doze'){ blink = true; a.sniff = el > .8 ? 0 : 1; }
       if (this.idle.name === 'turn'){                  // swing out and back
-        const p = Math.max(0, Math.min(1, 1 - (this.idle.until - now) / this.idle.dur));
+        const p = Math.max(0, Math.min(1, 1 - (this.idle.until - now) / this.idle.dur!));
         // quantised to the 4 poses in the reference: pixel art reads better stepped
         a.turn = this.idle.dir * Math.round(Math.sin(p * Math.PI) * 3) / 3;
       }

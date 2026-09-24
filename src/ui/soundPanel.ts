@@ -3,12 +3,12 @@ import { unlock, soundOn, setSoundOn, musicVol, setMusicVol, sfxVol, setSfxVol }
 import { resumeMusic, pauseMusic } from '../audio/music.js';
 import { sfx } from '../audio/sfx.js';
 
-export function initSoundPanel(){
-  const soundBtn = document.getElementById('sound');
-  const mixerBtn = document.getElementById('mixerBtn');
-  const mixer = document.getElementById('mixer');
-  const musicSlider = document.getElementById('musicSlider');
-  const sfxSlider = document.getElementById('sfxSlider');
+export function initSoundPanel(): void {
+  const soundBtn = document.getElementById('sound')!;
+  const mixerBtn = document.getElementById('mixerBtn')!;
+  const mixer = document.getElementById('mixer')!;
+  const musicSlider = document.getElementById('musicSlider') as HTMLInputElement;
+  const sfxSlider = document.getElementById('sfxSlider') as HTMLInputElement;
   const soundIcon = soundBtn.querySelector('canvas');
   const mixerIcon = mixerBtn.querySelector('canvas');
 
@@ -38,11 +38,12 @@ export function initSoundPanel(){
   });
   document.addEventListener('pointerdown', e => {
     if (mixer.hasAttribute('hidden')) return;
-    if (e.target === mixer || mixer.contains(e.target) || e.target === mixerBtn || mixerBtn.contains(e.target)) return;
+    const t = e.target as Node;
+    if (t === mixer || mixer.contains(t) || t === mixerBtn || mixerBtn.contains(t)) return;
     mixer.setAttribute('hidden', '');
     mixerBtn.setAttribute('aria-expanded', 'false');
   });
 
-  musicSlider.addEventListener('input', () => { unlock(); setMusicVol(musicSlider.value / 100); });
-  sfxSlider.addEventListener('input', () => { unlock(); setSfxVol(sfxSlider.value / 100); sfx.tap(); });
+  musicSlider.addEventListener('input', () => { unlock(); setMusicVol(Number(musicSlider.value) / 100); });
+  sfxSlider.addEventListener('input', () => { unlock(); setSfxVol(Number(sfxSlider.value) / 100); sfx.tap(); });
 }

@@ -6,6 +6,22 @@ import { T } from '../core/env.js';
 import { sfx } from '../audio/sfx.js';
 import { drawCapyRun, RUN_FRAME_W, RUN_FRAME_H } from '../sprites/capy.js';
 import { pine } from '../sprites/props.js';
+import type { Game } from '../core/types.js';
+
+interface Plank { x: number; w: number; }
+interface Debris { x: number; w: number; y: number; vx: number; vy: number; }
+interface Moving { w: number; x: number; dir: number; sp: number; }
+interface Star { x: number; y: number; p: number; }
+
+interface StackGame extends Game {
+  lh: number; baseY: number; baseW: number; scale: number; visible: number;
+  stack: Plank[]; debris: Debris[]; n: number; cam: number; flash: number;
+  stars: Star[]; moving: Moving;
+  spawn(dir: number): void;
+  drop(): void;
+  rowY(i: number): number;
+  plank(x: number, y: number, w: number, i: number): void;
+}
 
 /* ================= 5. capy stack =================
    Onsen deck planks. Tap to drop the sliding one; whatever overhangs the
@@ -13,8 +29,11 @@ import { pine } from '../sprites/props.js';
    A perfect drop costs nothing and pays a little width back. */
 const PERFECT_TOL = 1.2;        // virtual px
 
-export const stack = {
+export const stack: StackGame = {
   key: 'stack', title: 'CAPY STACK', canvas: true,
+  lh: 0, baseY: 0, baseW: 0, scale: 0, visible: 0,
+  stack: [], debris: [], n: 0, cam: 0, flash: 0, stars: [],
+  moving: { w: 0, x: 0, dir: 1, sp: 0 },
   layout(){
     this.lh    = Math.max(5, Math.round(PH * .045));       // plank thickness
     this.baseY = Math.round(PH * .94);
@@ -29,7 +48,7 @@ export const stack = {
     this.visible = Math.max(4, Math.floor(PH * .62 / this.lh));
   },
   start(){
-    this.layout();
+    this.layout!();
     const w = this.baseW;
     this.stack = [{ x: Math.round((PW - w) / 2), w }];
     this.debris = [];
@@ -125,9 +144,9 @@ export const stack = {
 
     // stars, twinkling the same way the menu scene's do
     for (const s of this.stars){
-      TARGET.globalAlpha = .35 + .45 * Math.sin(T * .8 + s.p);
+      TARGET!.globalAlpha = .35 + .45 * Math.sin(T * .8 + s.p);
       px(s.x, s.y, 1, 1, '#ffffff');
-      TARGET.globalAlpha = 1;
+      TARGET!.globalAlpha = 1;
     }
 
     // moon and a treeline for depth
@@ -144,9 +163,9 @@ export const stack = {
       this.plank(s.x, this.rowY(i), s.w, i);
     }
     for (const d of this.debris){
-      TARGET.globalAlpha = .85;
+      TARGET!.globalAlpha = .85;
       this.plank(d.x, d.y, d.w, 0);
-      TARGET.globalAlpha = 1;
+      TARGET!.globalAlpha = 1;
     }
 
     // the sliding plank, with the capybara riding it
@@ -155,10 +174,10 @@ export const stack = {
     drawCapyRun(m.x + m.w / 2, my + 1 + Math.sin(T * 3) * .5, this.scale, 0);
 
     if (this.flash > 0){
-      TARGET.globalAlpha = Math.min(1, this.flash * 2);
+      TARGET!.globalAlpha = Math.min(1, this.flash * 2);
       const cx = Math.round(PW / 2);
       for (let i = 0; i < 5; i++) px(cx - 10 + i * 5, my - 6, 2, 2, C.yuzu);
-      TARGET.globalAlpha = 1;
+      TARGET!.globalAlpha = 1;
     }
   },
   stat(){ return this.n + ' HIGH'; },

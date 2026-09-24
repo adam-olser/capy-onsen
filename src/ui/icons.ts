@@ -7,7 +7,7 @@ import { CAPY_RUN, RUN_FRAME_W, RUN_FRAME_H } from '../sprites/capy.js';
 /* ================= menu icons, drawn with the same pixel painter ================= */
 /* Corner sound button: a pixel speaker, not an emoji. Two states share one
    painter so on/off never drift out of sync visually. */
-export function drawSpeaker(on){
+export function drawSpeaker(on: boolean): void {
   const body = '#f4e9d8', dark = '#16223a';
   blob(4, 12, 7, 8, body, 2);
   // cone: three widening rows read as a trapezoid at this scale
@@ -28,7 +28,7 @@ export function drawSpeaker(on){
 }
 
 /* Mixer button: two small equalizer sliders. */
-export function drawMixer(){
+export function drawMixer(): void {
   const track = '#4a6169', knob = '#f2a03d';
   px(9, 5, 2, 22, track); px(20, 5, 2, 22, track);
   blob(6, 10, 8, 5, knob, 1);
@@ -37,7 +37,7 @@ export function drawMixer(){
 
 /* Fullscreen toggle: four corner brackets, pointing out when not
    fullscreen (expand) and in when already fullscreen (compress). */
-export function drawFullscreen(active){
+export function drawFullscreen(active: boolean): void {
   const c = '#f4e9d8';
   if (!active){
     px(3, 3, 7, 2, c); px(3, 3, 2, 7, c);
@@ -52,7 +52,7 @@ export function drawFullscreen(active){
   }
 }
 
-export const ICON_DRAW = {
+export const ICON_DRAW: Record<string, () => void> = {
   match(){                                   // a face-down card behind a face-up one
     blob(1, 8, 14, 21, C.out, 3);
     blob(3, 10, 10, 17, '#17555c', 3);
@@ -77,7 +77,7 @@ export const ICON_DRAW = {
     px(19, 6, 5, 1, '#7fc274');
   },
   wordle(){                                  // a guess grid resolving to green
-    const tile = (x, y, c) => { blob(x, y, 9, 11, C.out, 2); blob(x + 1, y + 1, 7, 9, c, 2); };
+    const tile = (x: number, y: number, c: string) => { blob(x, y, 9, 11, C.out, 2); blob(x + 1, y + 1, 7, 9, c, 2); };
     tile(1, 4, '#2a3a46'); tile(11, 4, '#2a3a46'); tile(21, 4, '#d9902f');
     tile(1, 17, '#4f8a49'); tile(11, 17, '#4f8a49'); tile(21, 17, '#4f8a49');
   },
@@ -85,11 +85,11 @@ export const ICON_DRAW = {
     blob(2, 26, 28, 5, C.out, 2); blob(3, 27, 26, 3, '#8a6242', 2);
     blob(6, 21, 20, 5, C.out, 2); blob(7, 22, 18, 3, '#6b4a33', 2);
     if (CAPY_RUN.complete && CAPY_RUN.naturalWidth)
-      TARGET.drawImage(CAPY_RUN, 0, 0, RUN_FRAME_W, RUN_FRAME_H, 3, 0, RUN_FRAME_W, RUN_FRAME_H);
+      TARGET!.drawImage(CAPY_RUN, 0, 0, RUN_FRAME_W, RUN_FRAME_H, 3, 0, RUN_FRAME_W, RUN_FRAME_H);
   },
   run(){                                     // Rainloaf's sprite, centred, unscaled
     if (!CAPY_RUN.complete || !CAPY_RUN.naturalWidth) return;
-    TARGET.drawImage(CAPY_RUN, 2 * RUN_FRAME_W, 0, RUN_FRAME_W, RUN_FRAME_H,
+    TARGET!.drawImage(CAPY_RUN, 2 * RUN_FRAME_W, 0, RUN_FRAME_W, RUN_FRAME_H,
                      Math.round((32 - RUN_FRAME_W) / 2), Math.round((32 - RUN_FRAME_H) / 2),
                      RUN_FRAME_W, RUN_FRAME_H);
   },
@@ -101,7 +101,7 @@ export const ICON_DRAW = {
    size and the draw commands are scaled to match -- same fix, cheaper for
    a one-shot paint. Falls back to the native attribute if it isn't laid out
    yet (0x0 from getBoundingClientRect, e.g. painted before its pane opens). */
-export function paintOn(cv, fn){
+export function paintOn(cv: HTMLCanvasElement | null, fn: (() => void) | null | undefined): void {
   if (!cv || !fn) return;
   const rect = cv.getBoundingClientRect();
   const cssW = rect.width  || cv.width  || 32;
@@ -109,7 +109,7 @@ export function paintOn(cv, fn){
   const scale = (cssW * DPR) / 32;
   cv.width = Math.max(1, Math.round(cssW * DPR));
   cv.height = Math.max(1, Math.round(cssH * DPR));
-  const g = cv.getContext('2d');
+  const g = cv.getContext('2d')!;
   g.imageSmoothingEnabled = false;
   g.scale(scale, scale);
   const prev = TARGET;
@@ -120,14 +120,14 @@ export function paintOn(cv, fn){
 // the sprite is a data URI: it decodes a tick after boot, so repaint once it lands
 CAPY_RUN.addEventListener('load', () => paintIcons());
 
-export function paintIcons(){
+export function paintIcons(): void {
   for (const key in ICON_DRAW){
     paintOn(document.querySelector('[data-game="' + key + '"] canvas.ico'), ICON_DRAW[key]);
   }
 }
 
 /* ---- memory match card faces, same pixel language as the games ---- */
-export const CARD_DRAW = {
+export const CARD_DRAW: Record<string, () => void> = {
   yuzu(){
     drawYuzu(16, 21, 12);
     px(0, 11, 12, 1, '#c98046'); px(0, 12, 10, 1, '#c98046');               // dimpled rind texture
@@ -145,9 +145,9 @@ export const CARD_DRAW = {
   },
   moon(){
     blob(2, 4, 25, 25, '#e8c46a', 7);
-    TARGET.globalCompositeOperation = 'destination-out';   // safe: the icon canvas starts empty
+    TARGET!.globalCompositeOperation = 'destination-out';   // safe: the icon canvas starts empty
     blob(12, -1, 25, 25, '#000', 7);
-    TARGET.globalCompositeOperation = 'source-over';
+    TARGET!.globalCompositeOperation = 'source-over';
     // craters, in the visible crescent sliver (lower-left of the circle)
     px(8, 21, 2, 2, '#d1a24a'); px(5, 15, 2, 2, '#d1a24a'); px(10, 25, 1, 1, '#d1a24a');
     px(19, 9, 3, 3, '#e8c46a');
@@ -201,7 +201,7 @@ export const CARD_DRAW = {
     // true ellipses (blob() only gives an axis-aligned rounded rect): the
     // classic symmetric paw-print glyph -- four even toes (outer two a
     // touch smaller) over one smooth rounded pad, no notch
-    const ellipse = (cx, cy, rx, ry, color) => {
+    const ellipse = (cx: number, cy: number, rx: number, ry: number, color: string) => {
       const x0 = Math.floor(cx - rx), x1 = Math.ceil(cx + rx);
       const y0 = Math.floor(cy - ry), y1 = Math.ceil(cy + ry);
       for (let y = y0; y <= y1; y++)
@@ -210,7 +210,7 @@ export const CARD_DRAW = {
           if (nx * nx + ny * ny <= 1) px(x, y, 1, 1, color);
         }
     };
-    const toe = (cx, cy, rx, ry) => { ellipse(cx, cy, rx, ry, c); ellipse(cx, cy - ry * .15, rx * .6, ry * .62, hi); };
+    const toe = (cx: number, cy: number, rx: number, ry: number) => { ellipse(cx, cy, rx, ry, c); ellipse(cx, cy - ry * .15, rx * .6, ry * .62, hi); };
     toe(7, 12, 3.4, 5);   toe(32 - 7, 12, 3.4, 5);               // outer toes
     toe(13, 6.5, 3.9, 5.8); toe(32 - 13, 6.5, 3.9, 5.8);         // inner toes
     ellipse(16, 22.5, 10, 7.5, c);                                // the pad
@@ -220,13 +220,13 @@ export const CARD_DRAW = {
     // a proper 5-point star, rasterised from its actual polygon so the
     // silhouette is correct instead of hand-drawn rows
     const cx = 16, cy = 16.5, R = 15, r = 5.9;
-    const pts = [];
+    const pts: [number, number][] = [];
     for (let i = 0; i < 10; i++){
       const ang = -Math.PI / 2 + i * Math.PI / 5;
       const rad = i % 2 === 0 ? R : r;
       pts.push([cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad]);
     }
-    const inside = (x, y) => {
+    const inside = (x: number, y: number) => {
       let c = false;
       for (let i = 0, j = pts.length - 1; i < pts.length; j = i++){
         const [xi, yi] = pts[i], [xj, yj] = pts[j];
@@ -247,7 +247,7 @@ export const CARD_DRAW = {
     px(15, 0, 2, 3, dark);                                    // hanging cord
     blob(12, 2, 8, 4, dark, 2);                                // top cap
     const top = 6, bot = 28, maxW = 12;
-    const bodyW = y => Math.round(maxW * Math.pow(Math.sin(Math.PI * (y - top) / (bot - top)), .55));
+    const bodyW = (y: number) => Math.round(maxW * Math.pow(Math.sin(Math.PI * (y - top) / (bot - top)), .55));
     for (let y = top; y <= bot; y++){
       const w = bodyW(y);
       if (w > 0) px(16 - w, y, w * 2, 1, paper);
@@ -260,7 +260,7 @@ export const CARD_DRAW = {
     px(15, 29, 2, 3, dark);                                     // tassel stub
   },
 };
-export function drawCardBack(){
+export function drawCardBack(): void {
   const base = '#2f7f88', dark = '#0f3a42';
   blob(5, 3, 8, 8, base, 2);
   blob(19, 3, 8, 8, base, 2);

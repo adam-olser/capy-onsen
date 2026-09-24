@@ -14,7 +14,7 @@ export let capyPortraitBox = {x: 0, y: 0, w: 0, h: 0};
    drawCapy() uses (w == head width, cheek to cheek). cy lands at the same
    "waterline sits ~12u below this" spot the procedural head used, so the
    scene's water-cut overlay still crosses the neck, not the mouth. */
-export function drawCapyPortrait(cx, cy, w){
+export function drawCapyPortrait(cx: number, cy: number, w: number): void {
   if (!CAPY_PORTRAIT.complete || !CAPY_PORTRAIT.naturalWidth) return;
   const scale = w / PORTRAIT_CHEEK;
   const dw = PORTRAIT_SRC * scale, dh = dw;
@@ -28,7 +28,7 @@ export function drawCapyPortrait(cx, cy, w){
   // the largest, most prominent thing on the menu, so a soft portrait was a
   // bad trade against the rest of the crisp, nearest-neighbor scene around
   // it. Plain nearest-neighbor now, same as everything else in the buffer.
-  TARGET.drawImage(CAPY_PORTRAIT, dx, dy, dw, dh);
+  TARGET!.drawImage(CAPY_PORTRAIT, dx, dy, dw, dh);
   capyPortraitBox = {x: dx, y: dy, w: dw, h: dh};
 }
 
@@ -36,7 +36,7 @@ export function drawCapyPortrait(cx, cy, w){
    hardcoding numbers that drift when the sprite is redrawn. */
 const FACE_U = 38;                      // design grid width, in units
 
-export function capyHead(w){
+export function capyHead(w: number): { u: number; hw: number; hh: number } {
   const u = Math.max(1, Math.round(w / FACE_U));
   return { u, hw: 19 * u, hh: 12 * u };
 }
@@ -51,9 +51,9 @@ CAPY_RUN.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIcAAAAVCAYAAABsSf
 export const RUN_FRAME_W = 27, RUN_FRAME_H = 21, RUN_FRAMES = 5, RUN_AIR_FRAME = 2;
 // consumers subscribe with CAPY_RUN.addEventListener('load', ...) — see ui/icons.js
 
-export function drawCapyRun(cx, footY, scale, frame){
+export function drawCapyRun(cx: number, footY: number, scale: number, frame: number): void {
   if (!CAPY_RUN.complete || !CAPY_RUN.naturalWidth) return;
   const w = RUN_FRAME_W * scale, h = RUN_FRAME_H * scale;
-  TARGET.drawImage(CAPY_RUN, (frame % RUN_FRAMES) * RUN_FRAME_W, 0, RUN_FRAME_W, RUN_FRAME_H,
+  TARGET!.drawImage(CAPY_RUN, (frame % RUN_FRAMES) * RUN_FRAME_W, 0, RUN_FRAME_W, RUN_FRAME_H,
                    Math.round(cx - w / 2), Math.round(footY - h), w, h);
 }

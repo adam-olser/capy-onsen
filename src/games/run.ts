@@ -7,10 +7,24 @@ import { hitsObstacle } from '../core/hit.js';
 import { drawCapyRun, RUN_FRAME_W, RUN_FRAME_H, RUN_AIR_FRAME } from '../sprites/capy.js';
 import { hitBox } from '../sprites/run-footprint.js';
 import { pine } from '../sprites/props.js';
+import type { Game } from '../core/types.js';
+
+type ObstacleKind = 'bush' | 'rock' | 'stump';
+interface Obstacle { x: number; w: number; h: number; kind: ObstacleKind; seed: number; }
+interface Dust { x: number; y: number; vx: number; vy: number; t: number; }
+
+interface RunGame extends Game {
+  scale: number; cw: number; u: number; cx: number; gy: number; jv: number; grav: number;
+  d: number; v: number; y: number; vy: number; obs: Obstacle[]; dust: Dust[];
+  next: number; phase: number; wasAir: boolean;
+  drawObstacle(o: Obstacle): void;
+}
 
 /* ================= 4. capy run ================= */
-export const run = {
+export const run: RunGame = {
   key: 'run', title: 'CAPY RUN', canvas: true,
+  scale: 0, cw: 0, u: 0, cx: 0, gy: 0, jv: 0, grav: 0,
+  d: 0, v: 0, y: 0, vy: 0, obs: [], dust: [], next: 0, phase: 0, wasAir: false,
   layout(){
     // integer scale only, so the artist's pixels stay square. Obstacles
     // spawn at PW and close in at a speed tied to cw, so the runway ahead
@@ -35,12 +49,12 @@ export const run = {
     this.grav = 11.84 * this.cw;
   },
   start(){
-    this.layout();
+    this.layout!();
     this.d = 0; this.v = 2.2 * this.cw; this.y = 0; this.vy = 0; this.obs = []; this.dust = [];
     this.next = 1.6; this.phase = 0; this.wasAir = false;
   },
   jump(){ if (this.y <= 0 && !over()){ this.vy = this.jv; sfx.jump(); } },
-  pointer(){ this.jump(); },
+  pointer(){ this.jump!(); },
   update(dt){
     const u = this.u;
     this.v += dt * this.cw * .09;
@@ -115,9 +129,9 @@ export const run = {
     }
     for (const o of this.obs) this.drawObstacle(o);
     for (const p of this.dust){
-      TARGET.globalAlpha = Math.max(0, p.t / .45) * .6;
+      TARGET!.globalAlpha = Math.max(0, p.t / .45) * .6;
       px(p.x, p.y, 2, 2, '#6b8299');
-      TARGET.globalAlpha = 1;
+      TARGET!.globalAlpha = 1;
     }
     drawCapyRun(this.cx, this.gy - this.y, this.scale, this.y > 0 ? RUN_AIR_FRAME : Math.floor(this.phase));
   },
