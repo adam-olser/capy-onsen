@@ -11,21 +11,22 @@ import { orange } from './games/orange.js';
 import { run } from './games/run.js';
 import { stack } from './games/stack.js';
 import { wordle, FACE_LW, FACE_LH } from './games/wordle.js';
+import type { Game, Pane } from './core/types.js';
 
 // older Safari fires this non-standard event on pinch, ignoring touch-action
 addEventListener('gesturestart', e => e.preventDefault());
 
 /* ================= routing ================= */
-const GAMES = { match, bubble, orange, run, stack, wordle };
-const wordEl = document.getElementById('word');
-const paneOf = g => g.pane || (g.canvas ? 'play' : 'board');
-let dom = null;                       // the non-canvas game currently open
+const GAMES: Record<string, Game> = { match, bubble, orange, run, stack, wordle };
+const wordEl = document.getElementById('word')!;
+const paneOf = (g: Game): Pane => g.pane || (g.canvas ? 'play' : 'board');
+let dom: Game | null = null;          // the non-canvas game currently open
 
-function openGame(key){
+function openGame(key: string): void {
   const g = GAMES[key];
   if (!g) return;
   gameEl.classList.add('on');
-  document.getElementById('gtitle').textContent = g.title;
+  document.getElementById('gtitle')!.textContent = g.title;
   winEl.classList.remove('on');
   if (dom && dom.stop) dom.stop();
   const p = paneOf(g);
@@ -37,7 +38,7 @@ function openGame(key){
   if (p === 'play'){ dom = null; startArena(g); }
   else { dom = g; g.start(); }
 }
-function closeGame(){
+function closeGame(): void {
   stopArena();
   if (dom && dom.stop) dom.stop();
   dom = null;
@@ -45,28 +46,28 @@ function closeGame(){
   sfx.tap();
   setScene('menu');
 }
-function restart(){
+function restart(): void {
   winEl.classList.remove('on');
   if (dom){ if (dom.stop) dom.stop(); dom.start(); } else restartArena();
   sfx.tap();
 }
-const active = () => dom || current();
+const active = (): Game | null => dom || current();
 
-document.getElementById('menu').addEventListener('click', e => {
-  const b = e.target.closest('[data-game]');
-  if (b) openGame(b.dataset.game);
+document.getElementById('menu')!.addEventListener('click', e => {
+  const b = (e.target as Element).closest('[data-game]') as HTMLElement | null;
+  if (b && b.dataset.game) openGame(b.dataset.game);
 });
-document.getElementById('back').addEventListener('click', closeGame);
-document.getElementById('again').addEventListener('click', restart);
+document.getElementById('back')!.addEventListener('click', closeGame);
+document.getElementById('again')!.addEventListener('click', restart);
 
-const creditsBtn = document.getElementById('creditsBtn');
-const creditsModal = document.getElementById('creditsModal');
-const creditsClose = document.getElementById('creditsClose');
-function openCredits(){
+const creditsBtn = document.getElementById('creditsBtn')!;
+const creditsModal = document.getElementById('creditsModal')!;
+const creditsClose = document.getElementById('creditsClose')!;
+function openCredits(): void {
   creditsModal.removeAttribute('hidden');
   creditsBtn.setAttribute('aria-expanded', 'true');
 }
-function closeCredits(){
+function closeCredits(): void {
   creditsModal.setAttribute('hidden', '');
   creditsBtn.setAttribute('aria-expanded', 'false');
 }
@@ -85,9 +86,9 @@ creditsModal.addEventListener('click', e => { if (e.target === creditsModal) clo
    when someone taps where a control used to be) or silently swallowing a
    rejected promise (same problem), always show it and fall back to a
    modal with that actual instruction whenever fullscreen isn't usable. */
-const fsBtn = document.getElementById('fullscreenBtn');
-const fsHelpModal = document.getElementById('fsHelpModal');
-document.getElementById('fsHelpClose').addEventListener('click', () => fsHelpModal.setAttribute('hidden', ''));
+const fsBtn = document.getElementById('fullscreenBtn')!;
+const fsHelpModal = document.getElementById('fsHelpModal')!;
+document.getElementById('fsHelpClose')!.addEventListener('click', () => fsHelpModal.setAttribute('hidden', ''));
 fsHelpModal.addEventListener('click', e => { if (e.target === fsHelpModal) fsHelpModal.setAttribute('hidden', ''); });
 const fsIcon = fsBtn.querySelector('canvas');
 const paintFs = () => {
@@ -117,7 +118,7 @@ document.addEventListener('fullscreenchange', paintFs);
    core/arena.js), its actual rendered size no longer exactly matches
    PIXEL * PW, and dividing by PIXEL instead of the canvas's real size drifts
    the hit-test off from where the pixels are actually drawn on screen. */
-function toArena(e){
+function toArena(e: PointerEvent): [number, number] {
   const r = playEl.getBoundingClientRect();
   return [(e.clientX - r.left) * (PW / r.width), (e.clientY - r.top) * (PH / r.height)];
 }
@@ -131,7 +132,7 @@ playEl.addEventListener('pointermove', e => {
   const g = current(); if (!g || !g.move) return;
   g.move(...toArena(e));
 });
-addEventListener('keydown', e => {
+addEventListener('keydown', (e: KeyboardEvent) => {
   if (e.key === 'Escape' && !creditsModal.hasAttribute('hidden')) return closeCredits();
   if (e.key === 'Escape' && !fsHelpModal.hasAttribute('hidden')) return fsHelpModal.setAttribute('hidden', '');
   if (!gameEl.classList.contains('on')) return;

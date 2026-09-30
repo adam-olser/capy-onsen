@@ -1,14 +1,15 @@
 import { PIXEL, DPR } from './env.js';
 import { setTarget } from './paint.js';
 import { playEl, stageEl, statEl, over } from './ui.js';
+import type { Game } from './types.js';
 
 /* ================= canvas arena ================= */
-const pb = document.createElement('canvas'), pbx = pb.getContext('2d');
-const pctx = playEl.getContext('2d');
+const pb = document.createElement('canvas'), pbx = pb.getContext('2d')!;
+const pctx = playEl.getContext('2d')!;
 export let PW = 0, PH = 0;
-let cur = null, raf = 0, lastT = 0, running = false;
+let cur: Game | null = null, raf = 0, lastT = 0, running = false;
 
-export function arenaResize(){
+export function arenaResize(): void {
   // measured against .stage, not the canvas itself -- once we size playEl to
   // an integer device-pixel box below, it stops filling .stage exactly, and
   // measuring playEl would feed that back in and shrink it every resize
@@ -43,21 +44,21 @@ export function arenaResize(){
 // not the canvas -- see the comment in arenaResize() for why
 new ResizeObserver(() => { if (running) arenaResize(); }).observe(stageEl);
 
-function tick(now){
-  if (!running) return;
+function tick(now: number): void {
+  if (!running || !cur) return;
   const dt = Math.min(.05, lastT ? (now - lastT) / 1000 : 0);
   lastT = now;
-  if (!over()) cur.update(dt);
+  if (!over()) cur.update!(dt);
   setTarget(pbx);
-  cur.draw();
+  cur.draw!();
   setTarget(null);
   pctx.clearRect(0, 0, playEl.width, playEl.height);
   pctx.drawImage(pb, 0, 0, PW, PH, 0, 0, playEl.width, playEl.height);
-  statEl.textContent = cur.stat();
+  statEl.textContent = cur.stat!();
   raf = requestAnimationFrame(tick);
 }
 
-export function startArena(game){
+export function startArena(game: Game): void {
   cur = game;
   arenaResize();
   game.start();
@@ -65,30 +66,30 @@ export function startArena(game){
   cancelAnimationFrame(raf);
   raf = requestAnimationFrame(tick);
 }
-export function stopArena(){
+export function stopArena(): void {
   running = false; cancelAnimationFrame(raf); cur = null;
 }
-export function restartArena(){
+export function restartArena(): void {
   if (!cur) return;
   arenaResize(); cur.start(); lastT = 0;
 }
-export const current = () => cur;
+export const current = (): Game | null => cur;
 
-export function bg(a, b){
+export function bg(a: string, b: string): void {
   const g = pbx.createLinearGradient(0, 0, 0, PH);
   g.addColorStop(0, a); g.addColorStop(1, b);
   pbx.fillStyle = g; pbx.fillRect(0, 0, PW, PH);
 }
 
 /* vertical gradient over an arbitrary band */
-export function vgrad(y0, y1, a, b){
+export function vgrad(y0: number, y1: number, a: string, b: string): void {
   const g = pbx.createLinearGradient(0, y0, 0, y1);
   g.addColorStop(0, a); g.addColorStop(1, b);
   pbx.fillStyle = g; pbx.fillRect(0, y0, PW, y1 - y0);
 }
 
 /* soft radial falloff, for lantern light and steam haze */
-export function glow(x, y, r, inner, outer = 'rgba(0,0,0,0)'){
+export function glow(x: number, y: number, r: number, inner: string, outer = 'rgba(0,0,0,0)'): void {
   const g = pbx.createRadialGradient(x, y, 0, x, y, r);
   g.addColorStop(0, inner); g.addColorStop(1, outer);
   pbx.fillStyle = g; pbx.beginPath(); pbx.arc(x, y, r, 0, 6.283); pbx.fill();

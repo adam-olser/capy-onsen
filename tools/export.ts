@@ -8,13 +8,13 @@ import { ICON_DRAW, CARD_DRAW, drawCardBack } from '../src/ui/icons.js';
 import { CAPY_RUN } from '../src/sprites/capy.js';
 
 const RECEIVER = 'http://127.0.0.1:8787/save?name=';
-const out = document.getElementById('out');
-const made = [];
+const out = document.getElementById('out')!;
+const made: { name: string; cv: HTMLCanvasElement }[] = [];
 
-function make(name, w, h, fn){
+function make(name: string, w: number, h: number, fn: (g: CanvasRenderingContext2D) => void): void {
   const cv = document.createElement('canvas');
   cv.width = w; cv.height = h;
-  const g = cv.getContext('2d');
+  const g = cv.getContext('2d')!;
   g.imageSmoothingEnabled = false;
   const prev = setTarget(g);
   setTarget(g);
@@ -25,7 +25,7 @@ function make(name, w, h, fn){
   const view = document.createElement('canvas');
   const S = Math.max(1, Math.round(160 / Math.max(w, h)));
   view.width = w * S; view.height = h * S;
-  const vg = view.getContext('2d');
+  const vg = view.getContext('2d')!;
   vg.imageSmoothingEnabled = false;
   vg.drawImage(cv, 0, 0, w, h, 0, 0, w * S, h * S);
   fig.append(view, Object.assign(document.createElement('figcaption'), { textContent: `${name}  ${w}x${h}` }));
@@ -51,10 +51,10 @@ if (CAPY_RUN.complete && CAPY_RUN.naturalWidth){
 }
 
 /* ---- ship them ---- */
-const status = document.getElementById('status');
+const status = document.getElementById('status')!;
 let done = 0, failed = 0;
 for (const { name, cv } of made){
-  const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+  const blob = await new Promise<Blob | null>(r => cv.toBlob(r, 'image/png'));
   try {
     await fetch(RECEIVER + encodeURIComponent(name), { method: 'POST', body: blob });
     done++;

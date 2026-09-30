@@ -8,8 +8,8 @@ import { unlock, ctx, sfxBus } from './bus.js';
    is added per-call so rapid repeats (popping several bubbles) don't sound
    like a machine gun of identical clicks. */
 
-let noiseBuf = null;
-function noise(){
+let noiseBuf: AudioBuffer | null = null;
+function noise(): AudioBuffer {
   const c = ctx();
   if (!noiseBuf){
     noiseBuf = c.createBuffer(1, c.sampleRate * 0.3, c.sampleRate);
@@ -19,19 +19,26 @@ function noise(){
   return noiseBuf;
 }
 
-const jitter = (cents = 15) => Math.pow(2, ((Math.random() * 2 - 1) * cents) / 1200);
+const jitter = (cents = 15): number => Math.pow(2, ((Math.random() * 2 - 1) * cents) / 1200);
+
+interface ToneOpts {
+  type?: OscillatorType;
+  a?: number; d?: number; s?: number; r?: number; peak?: number;
+  sweepTo?: number | null; sweepTime?: number;
+  filterFreq?: number | null; filterQ?: number;
+}
 
 /* A single oscillator voice with an ADSR envelope and an optional lowpass
    sweep (for pitch-bend "pop"/"jump" style cues) or filter. */
-function tone(freq, { type = 'sine', a = .005, d = .06, s = .3, r = .08, peak = .22,
-                       sweepTo = null, sweepTime = .1, filterFreq = null, filterQ = .8 } = {}){
+function tone(freq: number, { type = 'sine', a = .005, d = .06, s = .3, r = .08, peak = .22,
+                       sweepTo = null, sweepTime = .1, filterFreq = null, filterQ = .8 }: ToneOpts = {}){
   const c = ctx(), bus = sfxBus();
   const o = c.createOscillator(), g = c.createGain();
   o.type = type; o.frequency.value = freq * jitter();
   if (sweepTo != null){
     o.frequency.exponentialRampToValueAtTime(Math.max(20, sweepTo * jitter()), c.currentTime + sweepTime);
   }
-  let node = o;
+  let node: AudioNode = o;
   if (filterFreq){
     const f = c.createBiquadFilter();
     f.type = 'lowpass'; f.frequency.value = filterFreq; f.Q.value = filterQ;
@@ -46,8 +53,12 @@ function tone(freq, { type = 'sine', a = .005, d = .06, s = .3, r = .08, peak = 
   o.start(t0); o.stop(t0 + a + d + r + .02);
 }
 
+interface ThumpOpts {
+  dur?: number; q?: number; peak?: number; type?: BiquadFilterType;
+}
+
 /* A short burst of filtered noise -- a wooden tap, a card's edge, a splash. */
-function thump(freqCenter, { dur = .07, q = 1.4, peak = .18, type = 'bandpass' } = {}){
+function thump(freqCenter: number, { dur = .07, q = 1.4, peak = .18, type = 'bandpass' }: ThumpOpts = {}){
   const c = ctx(), bus = sfxBus();
   const src = c.createBufferSource(); src.buffer = noise();
   const f = c.createBiquadFilter(); f.type = type; f.frequency.value = freqCenter * jitter(8); f.Q.value = q;
@@ -59,7 +70,7 @@ function thump(freqCenter, { dur = .07, q = 1.4, peak = .18, type = 'bandpass' }
   src.start(t0); src.stop(t0 + dur + .01);
 }
 
-function at(fn, delayMs){ setTimeout(fn, delayMs); }
+function at(fn: () => void, delayMs: number): void { setTimeout(fn, delayMs); }
 
 export const sfx = {
   /* a soft wooden tap -- menu nav, keypresses */

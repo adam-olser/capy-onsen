@@ -1,16 +1,27 @@
 import { boardEl, statEl, finish } from '../core/ui.js';
 import { sfx } from '../audio/sfx.js';
 import { paintOn, CARD_DRAW, drawCardBack } from '../ui/icons.js';
+import type { Game } from '../core/types.js';
 
 /* ================= 1. memory match (DOM) ================= */
 const SYMBOLS = ['yuzu', 'bubble', 'moon', 'leaf', 'onsen', 'paw', 'star', 'lantern'];
-const SYMBOL_NAMES = {
+const SYMBOL_NAMES: Record<string, string> = {
   yuzu: 'yuzu', bubble: 'bubble', moon: 'moon',
   leaf: 'leaf', onsen: 'hot spring', paw: 'paw print',
   star: 'star', lantern: 'lantern',
 };
-export const match = {
+
+interface MatchGame extends Game {
+  first: HTMLButtonElement | null;
+  lock: boolean;
+  moves: number;
+  found: number;
+  flip(b: HTMLButtonElement): void;
+}
+
+export const match: MatchGame = {
   key: 'match', title: 'MEMORY MATCH', canvas: false,
+  first: null, lock: false, moves: 0, found: 0,
   start(){
     const deck = [...SYMBOLS, ...SYMBOLS]
       .map(v => ({v, k: Math.random()})).sort((a, b) => a.k - b.k).map(o => o.v);
@@ -34,7 +45,7 @@ export const match = {
   flip(b){
     if (this.lock || b.classList.contains('flipped') || b.classList.contains('done')) return;
     b.classList.add('flipped');
-    b.setAttribute('aria-label', SYMBOL_NAMES[b.dataset.v]);
+    b.setAttribute('aria-label', SYMBOL_NAMES[b.dataset.v!]);
     sfx.flip();
     if (!this.first){ this.first = b; return; }
     this.moves++;

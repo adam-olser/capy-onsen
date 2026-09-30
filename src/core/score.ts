@@ -5,9 +5,11 @@
    E as near and the other as miss, because ERASE has two Es and one is already
    consumed. A naive "does the answer contain this letter" check gets this
    wrong and is the most common bug in Wordle clones. */
-export function scoreGuess(guess, answer){
-  const res = new Array(guess.length).fill('miss');
-  const left = new Map();
+import type { Mark, KeyState } from './types.js';
+
+export function scoreGuess(guess: string, answer: string): Mark[] {
+  const res: Mark[] = new Array(guess.length).fill('miss');
+  const left = new Map<string, number>();
 
   // pass 1: exact positions, counting what the answer has left over
   for (let i = 0; i < answer.length; i++){
@@ -24,15 +26,15 @@ export function scoreGuess(guess, answer){
 }
 
 /* Keyboard keys only ever get better, never worse. */
-const RANK = { miss: 0, near: 1, hit: 2 };
-export function mergeKeyState(prev, next){
+const RANK: Record<Mark, number> = { miss: 0, near: 1, hit: 2 };
+export function mergeKeyState(prev: Mark | undefined, next: Mark): Mark {
   return RANK[next] > RANK[prev ?? 'miss'] || prev == null ? next : prev;
 }
 
 /* Up to `n` distinct letters from `answer` the keyboard doesn't already show
    as green, in answer order. Fewer come back once most of the word is known. */
-export function pickHint(answer, keyState, n = 2){
-  const out = [];
+export function pickHint(answer: string, keyState: KeyState, n = 2): string[] {
+  const out: string[] = [];
   for (const ch of answer){
     if (out.includes(ch) || keyState[ch] === 'hit') continue;
     out.push(ch);
