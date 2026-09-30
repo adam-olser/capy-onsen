@@ -4,7 +4,7 @@
    Used so the collision box matches what the obstacle can actually touch. */
 export const FRAME_ROWS = 21;
 export const FRAME_COLS = 27;
-export const FOOTPRINT = [
+export const FOOTPRINT: number[][] = [
   [7,14,6,14,5,15,5,15,4,16,4,17,4,17,4,18,4,18,4,18,4,18,4,19,4,26,4,26,4,26,4,26,4,26,4,26,4,26,4,26,4,26],
   [4,17,3,17,3,18,3,18,3,18,3,18,3,18,3,18,3,18,3,18,3,26,3,26,3,26,3,26,3,26,3,26,3,26,3,26,3,26,3,26,3,26],
   [1,17,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,18,1,19,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26,1,26],
@@ -13,7 +13,7 @@ export const FOOTPRINT = [
 ];
 
 /* null when the sprite has no pixels that low (mid-stride, feet in the air) */
-export function extentAt(frame, rowsUp){
+export function extentAt(frame: number, rowsUp: number): [number, number] | null {
   const f = FOOTPRINT[frame % FOOTPRINT.length];
   const k = Math.max(1, Math.min(FRAME_ROWS, Math.ceil(rowsUp))) - 1;
   const lo = f[k * 2], hi = f[k * 2 + 1];
@@ -22,7 +22,7 @@ export function extentAt(frame, rowsUp){
 
 /* World-space [back, front] of the part of the sprite an obstacle of this
    height can actually reach, or null if it cannot reach the sprite at all. */
-export function hitBox(frame, obstacleH, spriteY, scale, cx){
+export function hitBox(frame: number, obstacleH: number, spriteY: number, scale: number, cx: number): [number, number] | null {
   const rowsUp = (obstacleH - spriteY) / scale;
   if (rowsUp <= 0) return null;
   const ext = extentAt(frame, rowsUp);

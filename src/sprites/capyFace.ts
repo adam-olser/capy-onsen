@@ -37,26 +37,36 @@ const SPEC = {
   'turn-right-2':{ url: turnRight2Url,  foreheadTop: 0 },
   'turn-left-1': { url: turnLeft1Url,   foreheadTop: 5 },
   'turn-left-2': { url: turnLeft2Url,   foreheadTop: 0 },
-};
+} satisfies Record<string, { url: string; foreheadTop: number }>;
 
-const FACES = {};
+type FaceKey = keyof typeof SPEC;
+
+export interface FaceOpts {
+  turn?: number;
+  look?: number;
+  mood?: 'happy' | 'win' | 'sad' | 'lose';
+  ear?: number;
+  sniff?: number;
+}
+
+const FACES = {} as Record<FaceKey, HTMLImageElement>;
 for (const key in SPEC){
   const img = new Image();
-  img.src = SPEC[key].url;
-  FACES[key] = img;
+  img.src = SPEC[key as FaceKey].url;
+  FACES[key as FaceKey] = img;
 }
 
 /* Which frame a given (blink, opts) combination should show. Priority is
    turn > look > blink > mood, since a raster frame can only show one state
    at a time -- unlike the old procedural draw, which composited all of them.
    ear/sniff/doze/alert have no dedicated art and fall through to idle/blink. */
-export function pickFace(blink, opts){
+export function pickFace(blink: boolean, opts?: FaceOpts): FaceKey {
   const o = opts || {};
   const turn = o.turn || 0;
   if (Math.abs(turn) > 0.01){
     const dir = turn < 0 ? 'left' : 'right';
     const step = Math.abs(turn) >= 0.55 ? 2 : 1;   // 1/3 -> step 1, 2/3 and 1 both -> step 2
-    return `turn-${dir}-${step}`;
+    return `turn-${dir}-${step}` as FaceKey;
   }
   if (o.look) return o.look < 0 ? 'look-left' : 'look-right';
   if (blink) return 'blink';
@@ -68,7 +78,7 @@ export function pickFace(blink, opts){
 /* Same signature as the old procedural drawCapy(cx, cy, w, blink, opts), so
    every call site swaps in unchanged. `bust` is ignored -- every image
    already includes a hint of neck/shoulder from its own generation. */
-export function drawCapyFace(cx, cy, w, blink, opts){
+export function drawCapyFace(cx: number, cy: number, w: number, blink: boolean, opts?: FaceOpts): void {
   let key = pickFace(blink, opts);
   let img = FACES[key];
   if (!img.complete || !img.naturalWidth){ key = 'idle'; img = FACES.idle; }
@@ -79,5 +89,5 @@ export function drawCapyFace(cx, cy, w, blink, opts){
   const { hh } = capyHead(w);
   const dx = cx - dw / 2;
   const dy = (cy - hh) - SPEC[key].foreheadTop * scale;
-  TARGET.drawImage(img, dx, dy, dw, dh);
+  TARGET!.drawImage(img, dx, dy, dw, dh);
 }

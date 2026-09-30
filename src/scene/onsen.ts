@@ -6,14 +6,20 @@ import { drawYuzu, pine } from '../sprites/props.js';
 import { sfx } from '../audio/sfx.js';
 
 /* ================= pixel scene ================= */
-const cv = document.getElementById('scene');
-const ctx = cv.getContext('2d');
+const cv = document.getElementById('scene') as HTMLCanvasElement;
+const ctx = cv.getContext('2d')!;
 const buf = document.createElement('canvas');
-const bx = buf.getContext('2d');
+const bx = buf.getContext('2d')!;
 
-let VW = 120, VH = 220, scale = 1, stars = [], steam = [], yuzu = [], fireflies = [];
+interface Star { x: number; y: number; p: number; }
+interface Steam { x: number; y: number; r: number; s: number; a: number; }
+interface Yuzu { x: number; p: number; }
+interface Firefly { x: number; y: number; p: number; s: number; }
 
-function resize(){
+let VW = 120, VH = 220, scale = 1;
+let stars: Star[] = [], steam: Steam[] = [], yuzu: Yuzu[] = [], fireflies: Firefly[] = [];
+
+function resize(): void {
   const w = innerWidth, h = innerHeight;
   // nominal CSS px per logical unit -- capped at 4 (roughly what a 425px-wide
   // phone already gets) so a wider/taller viewport reveals more of the scene
@@ -64,7 +70,7 @@ new ResizeObserver(resize).observe(document.documentElement);
 
 let t0 = performance.now(), happyUntil = 0;
 
-function frame(now){
+function frame(now: number): void {
   setTarget(bx);
   setT(RM ? 3 : (now - t0) / 1000);
   const waterY = Math.round(VH * .52);
@@ -98,7 +104,7 @@ function frame(now){
   }
 
   // pine silhouettes along the ridge
-  const ridge = x => hy + VH * .03 - Math.sin(x / (VW * .19) + 2) * VH * .03;
+  const ridge = (x: number) => hy + VH * .03 - Math.sin(x / (VW * .19) + 2) * VH * .03;
   for (const [pxx, ph] of [[.04, .075], [.15, .05], [.22, .06], [.78, .05], [.86, .075], [.97, .045]]){
     const gx = Math.round(VW * pxx);
     pine(gx, Math.round(ridge(gx)) + 1, VH * ph, '#0a1320');
@@ -230,13 +236,13 @@ cv.addEventListener('pointerdown', e => {
   }
 });
 
-export function startScene(){
+export function startScene(): void {
   resize();
   requestAnimationFrame(frame);
 }
 
 /* exposes the current integer buffer->canvas scale for the visual tests --
    see test/visual/pixel-scale.spec.js */
-export function sceneDebug(){
+export function sceneDebug() {
   return { VW, VH, scale, cvW: cv.width, cvH: cv.height };
 }

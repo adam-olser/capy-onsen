@@ -3,7 +3,7 @@ import { scoreGuess, mergeKeyState, pickHint } from '../src/core/score.js';
 import { caught, hitsObstacle } from '../src/core/hit.js';
 import { ALLOWED, ANSWERS } from '../src/data/words.js';
 
-const s = (g, a) => scoreGuess(g, a).join(' ');
+const s = (g: string, a: string) => scoreGuess(g, a).join(' ');
 
 test('all correct', () => {
   expect(s('steam', 'steam')).toBe('hit hit hit hit hit');
@@ -74,12 +74,12 @@ test('a short obstacle only meets the legs, not the nose', () => {
   const tall = hitBox(0, FRAME_ROWS * scale, 0, scale, cx);
   // frame 0 stands on x 7..14, but its silhouette reaches x 26 (the snout)
   expect(low).toEqual([cellL + 7 * scale, cellL + 15 * scale]);
-  expect(tall[1]).toBe(cellL + 27 * scale);
-  expect(low[1]).toBeLessThan(tall[1]);                 // short bush cannot reach the snout
+  expect(tall![1]).toBe(cellL + 27 * scale);
+  expect(low![1]).toBeLessThan(tall![1]);                 // short bush cannot reach the snout
 });
 
 test('the box grows as the obstacle gets taller', () => {
-  const widths = [1, 4, 8, 14, 21].map(h => { const b = hitBox(2, h, 0, 1, 0); return b[1] - b[0]; });
+  const widths = [1, 4, 8, 14, 21].map(h => { const b = hitBox(2, h, 0, 1, 0)!; return b[1] - b[0]; });
   expect(widths).toEqual([...widths].sort((a, b) => a - b));
 });
 

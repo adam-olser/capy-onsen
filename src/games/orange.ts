@@ -6,10 +6,12 @@ import { caught } from '../core/hit.js';
 import { capyHead } from '../sprites/capy.js';
 import { drawCapyFace } from '../sprites/capyFace.js';
 import { drawYuzu, citrusTree } from '../sprites/props.js';
+import type { Game } from '../core/types.js';
+import type { FaceOpts } from '../sprites/capyFace.js';
 
 /* A flared-rim, tapered-wall U bowl, stepped one unit at a time -- at u=1
    a smooth curve all but disappears, but two explicit steps read clearly. */
-function trayBowl(x, y, w, u, rim, body){
+function trayBowl(x: number, y: number, w: number, u: number, rim: string, body: string): void {
   px(x, y, w, u, rim);                                     // flared outer rim
   px(x + u, y + u, w - 2 * u, u, body);                     // wall, one step in
   px(x + 2 * u, y + 2 * u, w - 4 * u, 2 * u, body);         // cupped base, two steps in
@@ -18,9 +20,23 @@ function trayBowl(x, y, w, u, rim, body){
 
 /* ================= 3. orange catch ================= */
 const STACK_MAX = 5;
-const STACK_POS = [[0, 0], [-1, 0], [1, 0], [-.5, -1], [.5, -1]];
-export const orange = {
+const STACK_POS: [number, number][] = [[0, 0], [-1, 0], [1, 0], [-.5, -1], [.5, -1]];
+
+interface Item { x: number; y: number; v: number; }
+interface Fx { x: number; y: number; vx: number; vy: number; }
+
+interface OrangeGame extends Game {
+  cw: number; u: number; cy: number; top: number; halfW: number; r: number;
+  cx0: number; bandHalf: number; x: number | null;
+  items: Item[]; fx: Fx[]; n: number; lives: number; spawn: number; sp: number;
+  stack: number; flash: number; mood: 'happy' | 'sad' | null; moodT: number;
+  tumble(): void;
+}
+
+export const orange: OrangeGame = {
   key: 'orange', title: 'ORANGE CATCH', canvas: true,
+  cw: 0, u: 0, cy: 0, top: 0, halfW: 0, r: 0, cx0: 0, bandHalf: 0, x: null,
+  items: [], fx: [], n: 0, lives: 0, spawn: 0, sp: 0, stack: 0, flash: 0, mood: null, moodT: 0,
   layout(){
     this.cw = Math.min(40, Math.max(16, Math.round(PH * .17)));
     const head = capyHead(this.cw);
@@ -39,7 +55,7 @@ export const orange = {
     this.x = Math.max(this.cx0 - this.bandHalf + this.halfW, Math.min(this.cx0 + this.bandHalf - this.halfW, this.x == null ? this.cx0 : this.x));
   },
   start(){
-    this.x = null; this.layout();
+    this.x = null; this.layout!();
     this.items = []; this.fx = []; this.n = 0; this.lives = 3; this.spawn = .5; this.sp = 1;
     this.stack = 0; this.flash = 0;
     this.mood = null; this.moodT = 0;
@@ -57,7 +73,7 @@ export const orange = {
     this.items = this.items.filter(o => {
       // swept test against the head top, so nothing tunnels through at speed
       const bottom = o.y + this.r, prev = bottom - o.v * dt;
-      if (caught(prev, bottom, this.top, o.x - this.x, this.halfW)){
+      if (caught(prev, bottom, this.top, o.x - this.x!, this.halfW)){
         this.n++; this.stack++; this.flash = .18; sfx.match();
         this.mood = 'happy'; this.moodT = .4;
         if (this.stack >= STACK_MAX) this.tumble();
@@ -82,15 +98,15 @@ export const orange = {
     for (let i = 0; i < STACK_MAX; i++){
       const [dx, dy] = STACK_POS[i];
       this.fx.push({
-        x: this.x + dx * this.r * 1.9, y: this.top - this.r + dy * this.r * 1.8,
+        x: this.x! + dx * this.r * 1.9, y: this.top - this.r + dy * this.r * 1.8,
         vx: (dx || (Math.random() - .5)) * 34 + (Math.random() - .5) * 14, vy: -40 - Math.random() * 20,
       });
     }
     this.stack = 0;
     sfx.pop();
   },
-  pointer(x){ this.x = Math.max(this.cx0 - this.bandHalf + this.halfW, Math.min(this.cx0 + this.bandHalf - this.halfW, x)); },
-  move(x){ this.pointer(x); },
+  pointer(x: number, _y: number){ this.x = Math.max(this.cx0 - this.bandHalf + this.halfW, Math.min(this.cx0 + this.bandHalf - this.halfW, x)); },
+  move(x: number, y: number){ this.pointer!(x, y); },
   draw(){
     bg('#16223a', '#1f6b73');
     const horizon = PH * .28;
@@ -98,18 +114,19 @@ export const orange = {
       citrusTree(Math.round(PW * fx), Math.round(horizon), Math.max(6, PH * fs), '#234d21');
     for (let i = 0; i < 4; i++){
       const ry = PH - 4 - i * 5;
-      TARGET.globalAlpha = .1; px(PW * .05, ry, PW * .9, 1, '#bfeef0'); TARGET.globalAlpha = 1;
+      TARGET!.globalAlpha = .1; px(PW * .05, ry, PW * .9, 1, '#bfeef0'); TARGET!.globalAlpha = 1;
     }
     // capybara sits a layer below every orange -- glances toward the closest
     // falling yuzu when not busy flashing a happy/sad reaction to one
-    let faceOpts = {};
-    if (this.moodT > 0) faceOpts = {mood: this.mood};
+    const x = this.x!;
+    let faceOpts: FaceOpts = {};
+    if (this.moodT > 0) faceOpts = {mood: this.mood!};
     else {
-      let nearest = null;
+      let nearest: Item | null = null;
       for (const o of this.items) if (!nearest || o.y > nearest.y) nearest = o;
-      if (nearest && Math.abs(nearest.x - this.x) > this.r) faceOpts = {look: nearest.x < this.x ? -1 : 1};
+      if (nearest && Math.abs(nearest.x - x) > this.r) faceOpts = {look: nearest.x < x ? -1 : 1};
     }
-    drawCapyFace(this.x, this.cy, this.cw, false, faceOpts);
+    drawCapyFace(x, this.cy, this.cw, false, faceOpts);
 
     // tray: an honest indicator of the actual catch width, not a fudged one --
     // its edges sit exactly at this.x +/- this.halfW, the real hitbox. Its rim
@@ -117,12 +134,12 @@ export const orange = {
     // visibly sinks into the bowl instead of vanishing into the head above it.
     const u = this.u, tw = this.halfW * 2, ty = this.top - u;
     const lit = this.flash > 0;
-    trayBowl(this.x - this.halfW, ty, tw, u, '#5a3a24', lit ? '#e8a34f' : '#c96f4a');
-    px(this.x - this.halfW, ty, u, u, '#3a2418');            // little end-posts, like a tray's rim
-    px(this.x + this.halfW - u, ty, u, u, '#3a2418');
+    trayBowl(x - this.halfW, ty, tw, u, '#5a3a24', lit ? '#e8a34f' : '#c96f4a');
+    px(x - this.halfW, ty, u, u, '#3a2418');            // little end-posts, like a tray's rim
+    px(x + this.halfW - u, ty, u, u, '#3a2418');
     for (let i = 0; i < this.stack; i++){
       const [dx, dy] = STACK_POS[i];
-      drawYuzu(this.x + dx * this.r * 1.9, this.top - this.r + dy * this.r * 1.8, this.r);
+      drawYuzu(x + dx * this.r * 1.9, this.top - this.r + dy * this.r * 1.8, this.r);
     }
     for (const f of this.fx) drawYuzu(f.x, f.y, this.r);
     for (const o of this.items) drawYuzu(o.x, o.y, this.r);
