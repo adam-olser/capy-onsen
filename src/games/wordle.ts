@@ -31,7 +31,6 @@ type Mood = 'idle' | 'happy' | 'sad' | 'win' | 'lose';
    is never simply static; each is a small parameter change, not a new sprite. */
 const IDLES: { name: IdleName; dur: number }[] = [
   { name: 'blink', dur: .18 },
-  { name: 'look',  dur: 1.2 },
   { name: 'ear',   dur: .55 },
   { name: 'sniff', dur: .8  },
   { name: 'doze',  dur: 1.6 },
@@ -97,7 +96,7 @@ export const wordle: WordleGame = {
     this.hintBtn.disabled = false;
     this.hintBtn.textContent = 'HINT · 2 LETTERS';
     this.build();
-    statEl.textContent = '1/' + ROWS;
+    statEl.textContent = '0/' + ROWS;
 
     if (!this.onHint){
       this.onHint = () => this.useHint();
@@ -204,7 +203,7 @@ export const wordle: WordleGame = {
     const last = this.row === ROWS - 1;
     const guesses = this.row + 1;
     this.row++; this.cur = '';
-    statEl.textContent = Math.min(this.row + 1, ROWS) + '/' + ROWS;
+    statEl.textContent = Math.min(this.row, ROWS) + '/' + ROWS;
 
     setTimeout(() => {
       if (won){

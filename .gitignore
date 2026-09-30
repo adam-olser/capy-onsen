@@ -5,3 +5,4 @@ bun.lockb
 bun.lock
 test-results/
 playwright-report/
+.claude/

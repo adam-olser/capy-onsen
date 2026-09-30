@@ -1,4 +1,4 @@
-# Capy Onsen 🐹♨️
+# Capy Onsen
 
 A pixel-art capybara onsen with six mini-games, built with [Bun](https://bun.sh) and plain canvas/DOM — no framework.
 
